@@ -14,6 +14,7 @@ urlpatterns = patterns('',
     # url(r'^admin/', include(admin.site.urls)),
 
     url(r'^$', 'kindleio.views.home', name='home'),
+    url(r'^login/$', 'kindleio.views.login', name='login'),
 )
 
 if settings.DEBUG:

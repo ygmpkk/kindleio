@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Kindle.io</title>
+    <link rel="stylesheet" href="/media/css/bootstrap.css" type="text/css" />
+    <link rel="stylesheet" href="/media/css/bootstrap-responsive.css" type="text/css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="/media/js/jquery.js"></script>    
+    <script src="/media/js/bootstrap.js"></script>    
+<style>
+* {font-size:14px;}
+body {background: url("/media/img/bg.png");}
+.home {text-align:center;}
+.logo {text-align:center; margin: 70px 0px 0;}
+.main_form {margin:45px 0 50px;}
+.main_form input {font-weight:bold; margin-left:12px; padding:6px;}
+.main_form .main_input {width: 96%;margin:0 0 20px; color:gray;}
+footer a {margin-left:10px;}
+</style>
+
+<body>
+
+<div class="container">
+    <div class="row">
+        <div class="span6 offset3 home">
+            <h1 class="logo">Kindle.io</h1>
+
+            <form method="POST" class="main_form">
+                <input type="text" class="main_input" value="http://" />
+                <div class="row">
+                    <input type="submit" value="Send to Kindle">
+                    <input type="submit" value="Read Me">
+                </div>
+            </form>
+
+            <hr>
+            <footer class="footer">
+                <p>&copy; 2012 kindle.io <a href="">Profile</a> <a href="">Sign Out</a></p>
+            </footer>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
