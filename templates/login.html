@@ -75,7 +75,10 @@ form .clearfix { margin-bottom: 14px; }
             </div>
 
             <div id="login">
-                <form method="POST">
+                {% if login_error_info %}
+                <div class="alert alert-error">{{ login_error_info }}</div>
+                {% endif %}
+                <form method="POST" action=".">{% csrf_token %}
                     <h2>Sign In</h2>
                     <div class="clearfix">
                         <label for="username">Username or email</label>
@@ -83,7 +86,7 @@ form .clearfix { margin-bottom: 14px; }
                     </div>
                     <div class="clearfix">
                         <label for="username">Password</label>
-                        <div class="input"><input type="password" maxlength="30" name="username" id="id_username"></div>
+                        <div class="input"><input type="password" maxlength="30" name="password" id="id_password"></div>
                     </div>
                     <div class="clearfix">
                         <input type="submit" class="btn" value="Sign In">
@@ -95,7 +98,7 @@ form .clearfix { margin-bottom: 14px; }
 
                 <div id="social_login" class="row">
                     <div class="span2 offset1">
-                        <a href="#"><img src="/media/img/doubanicon-24-full.png"></a>
+                        <a href="/accounts/login_with_douban/"><img src="/media/img/doubanicon-24-full.png"></a>
                     </div>
                     <div class="span2 login_twitter">
                         <a href="#"><img src="/media/img/sign-in-with-twitter-l.png"></a>
