@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Profile - Kindle.io</title>
+    <link rel="stylesheet" href="/media/css/bootstrap.css" type="text/css" />
+    <link rel="stylesheet" href="/media/css/bootstrap-responsive.css" type="text/css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="/media/js/jquery.js"></script>    
+    <script src="/media/js/bootstrap.js"></script>    
+<style>
+* {font-size:14px;}
+body {background: url("/media/img/bg.png");}
+.logo {text-align:left;margin:50px 0px 30px;}
+.logo span {float:right; color:#E47911;}
+.tab-content {margin:0px 6px 0;}
+.tab-content label {margin:8px 0 4px;}
+footer a {margin-left:10px;}
+.help-block span {color:#E47911;}
+.form-actions {padding-left:20px !important;}
+</style>
+
+<body>
+
+<div class="container">
+    <div class="row">
+        <div class="span6 offset3">
+            <h1 class="logo">Kindle.io <span>Hello, {{ request.user.first_name }}</span></h1>
+
+            {% if error_info %}
+            <div class="alert alert-error">{{ error_info }}
+                <a class="close" data-dismiss="alert">×</a>
+            </div>
+            {% endif %}
+
+            {% if update_succeed %}
+            <div class="alert alert-success">
+                <a class="close" data-dismiss="alert">×</a>
+                You settings have been saved successfully!
+            </div>
+            {% endif %}
+
+            <ul class="nav nav-tabs">
+                <li class="active"><a href="#profile" data-toggle="tab">Profile</a></li>
+                <li><a href="#hackernews" data-toggle="tab">Hacker News</a></li>
+            </ul>
+
+            <div class="tab-content">
+                <div class="tab-pane active" id="profile">
+                    <form method="post" class="form-horizontal">{% csrf_token %}
+                        <label for="first_name">First Name</label>
+                        <input type="text" id="first_name" name="first_name" class="span3" value="{{ request.user.first_name }}">
+                        <p class="help-block">Will show up on the website. Not the sign in username.</p>
+
+                        <p></p>
+                        <label for="kindle_email">Send to Kindle E-mail</label>
+                        <input type="text" id="kindle_email" name="kindle_email" class="span3" placeholder="@kindle.com" value="{{ request.user.get_profile.kindle_email }}">
+                        <p class="help-block">Make sure to add <span>info@kindle.io</span> into your "Approved Personal Document E-mail List" via <a href="http://www.amazon.com/myk">Manage Your Kindle page</a>. So that your kindle can receive documents sent from kindle.io</p>
+                        <div class="form-actions">
+                            <input type="submit" class="btn btn-primary" value="Save changes">
+                            <a href="" class="btn">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="tab-pane" id="hackernews">
+                    <form method="post" class="form-horizontal">{% csrf_token %}
+                        <label for="receive_hn" class="checkbox">
+                            <input type="checkbox" id="receive_hn" name="receive_hn" {% if not request.user.get_profile.hn_disabled %}checked="checked"{% endif %}>
+                            Receive Hacker News
+                        </label>
+                        <p class="help-block">Check this on to receive articles from <a href="http://news.ycombinator.com/">Hacker News</a> list.</p>
+
+                        <label for="points_limit">Points Limit</label>
+                        <select id="points_limit"{% if request.user.get_profile.hn_disabled %} disabled="disabled"{% endif %} name="points_limit" class="span4">
+                            {% for points, title in points_list %}
+                            <option value="{{ points }}"{% ifequal request.user.get_profile.hn_points points %} selected="selected"{% endifequal %}>{{ title }}</option>
+                            {% endfor %}
+                        </select>
+                        <p class="help-block">Only articles that whose points are over this Limit will be sent to your kindle.</p>
+
+                        <div class="form-actions">
+                            <input type="submit" class="btn btn-primary" value="Save changes">
+                            <a href="" class="btn">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <hr>
+            <footer class="footer">
+                <p>&copy; 2012 kindle.io <a href="/">Home</a> <a href="/logout/">Sign Out</a></p>
+            </footer>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+$(function() {
+    $("#receive_hn").click(function() {
+        var is_checked = $("#receive_hn").attr("checked");
+        if (is_checked) {
+            $("#points_limit").removeAttr('disabled');
+        }
+        else {
+            $("#points_limit").attr('disabled', 'disabled');
+        }
+    });
+});
+</script>
+</body>
+</html>
+

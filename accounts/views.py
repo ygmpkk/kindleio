@@ -1,5 +1,9 @@
 from cgi import parse_qs
 
+import pydouban
+from oauthtwitter import OAuthApi
+import twitter, oauth
+
 from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponse, HttpResponseRedirect
@@ -7,12 +11,60 @@ from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.core.urlresolvers import reverse
 
-from django.contrib.auth.models import User
-from kindleio.accounts.models import UserProfile
+from kindleio.accounts.decorators import login_required
+from kindleio.accounts.utils import create_user_via_douban_id, create_user_via_twitter_id
+from kindleio.hackernews.models import UserConfig
 
-import pydouban
-from oauthtwitter import OAuthApi
-import twitter, oauth
+
+def register(request):
+    # Cannot allow user rgister usernames begin with "douban_" or "twitter_"
+    pass
+
+
+@login_required
+def profile(request):
+    user = request.user
+    error_info = ""
+    update_succeed = None
+    if request.method == "POST":
+        first_name = request.POST.get("first_name")
+        if first_name:
+            user.first_name = first_name
+            user.save()
+            update_succeed = True
+        kindle_email = request.POST.get("kindle_email")
+        if kindle_email:
+            if ("@" in kindle_email) and kindle_email.endswith("kindle.com"):
+                profile = request.user.get_profile()
+                profile.kindle_email = kindle_email
+                profile.save()
+                update_succeed = True
+            else:
+                error_info = "Invalid email, must ends with @kindle.com"
+                update_succeed = False
+
+        hn_config = UserConfig.objects.get(user=user)
+        receive_hn = request.POST.get("receive_hn", None)
+        if receive_hn:
+            points = request.POST.get("points_limit", 500)
+            hn_config.points = points
+        hn_config.disabled = (receive_hn is None)
+        hn_config.save()
+    
+    points_list = ((100, "100 (approximately 18 articles per day)"),
+                   (149, "149 (approximately 12 articles per day)"),
+                   (200, "200 (approximately 7 articles per day)"),
+                   (249, "249 (approximately 5 articles per day)"),
+                   (300, "300 (approximately 3 articles per day)"),
+                   (349, "349 (approximately 2 articles per day)"),
+                   (400, "400 (rare)"),
+                   (500, "500 (very rare)"))
+    return render_to_response("profile.html",
+                              {'error_info': error_info,
+                               'update_succeed': update_succeed,
+                               "points_list": points_list,
+                              },
+                              context_instance=RequestContext(request))
 
 
 def site_login(request):
@@ -57,9 +109,6 @@ def login_with_douban(request):
     return HttpResponseRedirect(dic['url'])
 
 
-def profile(request):
-    return HttpResponse("The profile page.")
-
 def douban_callback(request):
     request_key = request.GET.get("oauth_token")
     request_secret = request.session.get("douban_request_secret")
@@ -73,24 +122,7 @@ def douban_callback(request):
 
     # Create a user if not exist
     douban_id = request.session['douban_user_id']
-    try:
-        up = UserProfile.objects.get(douban_id=douban_id)
-    except UserProfile.DoesNotExist:
-        api = get_douban_api(request)
-        people = api.get_people(douban_id)
-        username = people['title']['t']
-        if User.objects.filter(username=username).exists():
-            new_name = "douban_" + douban_id
-            if not User.objects.filter(username=new_name).exists():
-                user = User.objects.create(username=new_name)
-                up = user.get_profile()
-                up.douban_id = douban_id
-                up.save()
-        else:
-            user = User.objects.create(username=username)
-            up = user.get_profile()
-            up.douban_id = douban_id
-            up.save()
+    create_user_via_douban_id(douban_id)
         
     if "douban_request_secret" in request.session:
         del request.session["douban_request_secret"]
@@ -130,9 +162,10 @@ def twitter_callback(request):
         del request.session["twitter_request_token"]
 
     # save twitter id
+    api = get_twitter_api(request)
     user = api.GetUserInfo()
     request.session["twitter_id"] = user.screen_name
-
+    create_user_via_twitter_id(user.screen_name)
     next_url = request.session.get("next_url", "")
     if not next_url:
         next_url = reverse("accounts_profile")
