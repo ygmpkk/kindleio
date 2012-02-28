@@ -1,10 +1,12 @@
 from django.contrib.auth import REDIRECT_FIELD_NAME
 from django.contrib.auth.decorators import user_passes_test
-from kindleio.accounts.models import UserProfile, DOUBAN_LOGIN_ATTR
+from kindleio.accounts.models import UserProfile, DOUBAN_LOGIN_FLAG, TWITTER_LOGIN_FLAG
 
 
 def is_authenticated(user):
-    return user.is_authenticated() or hasattr(user, DOUBAN_LOGIN_ATTR)
+    return user.is_authenticated() or \
+        hasattr(user, DOUBAN_LOGIN_FLAG) or \
+        hasattr(user, TWITTER_LOGIN_FLAG)
 
 
 def login_required(function=None, redirect_field_name=REDIRECT_FIELD_NAME, login_url=None):

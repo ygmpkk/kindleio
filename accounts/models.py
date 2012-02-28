@@ -2,7 +2,8 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 
-DOUBAN_LOGIN_ATTR = "loged_with_douban"
+DOUBAN_LOGIN_FLAG = "loged_with_douban"
+TWITTER_LOGIN_FLAG = "loged_with_twitter"
 
 
 class UserProfile(models.Model):
