@@ -6,14 +6,17 @@ import twitter, oauth
 
 from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, HttpResponseForbidden
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.core.urlresolvers import reverse
 
 from kindleio.accounts.decorators import login_required
 from kindleio.accounts.utils import create_user_via_douban_id, create_user_via_twitter_id
-from kindleio.hackernews.models import UserConfig
+from kindleio.accounts.models import UserProfile
+from kindleio.hackernews.models import UserConfig, POINTS_LIMIT_PAIRS
+from kindleio.hackernews.utils import get_limit_points
+
 
 
 def register(request):
@@ -47,22 +50,15 @@ def profile(request):
         receive_hn = request.POST.get("receive_hn", None)
         if receive_hn:
             points = request.POST.get("points_limit", 500)
+            points = get_limit_points(points)
             hn_config.points = points
         hn_config.disabled = (receive_hn is None)
         hn_config.save()
-    
-    points_list = ((100, "100 (approximately 18 articles per day)"),
-                   (149, "149 (approximately 12 articles per day)"),
-                   (200, "200 (approximately 7 articles per day)"),
-                   (249, "249 (approximately 5 articles per day)"),
-                   (300, "300 (approximately 3 articles per day)"),
-                   (349, "349 (approximately 2 articles per day)"),
-                   (400, "400 (rare)"),
-                   (500, "500 (very rare)"))
+        update_succeed = True
     return render_to_response("profile.html",
                               {'error_info': error_info,
                                'update_succeed': update_succeed,
-                               "points_list": points_list,
+                               "points_list": POINTS_LIMIT_PAIRS,
                               },
                               context_instance=RequestContext(request))
 

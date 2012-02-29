@@ -1,4 +1,4 @@
-from django.conf.urls import patterns, include, url
+from django.conf.urls import patterns, url
 
 urlpatterns = patterns('kindleio.accounts.views',
     url(r'^login/$', 'site_login', name='accounts_login'),

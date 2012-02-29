@@ -7,10 +7,9 @@ Replace this with more appropriate tests for your application.
 
 from django.test import TestCase
 
+from models import POINTS_LIMITS, POINTS_LIMIT_PAIRS
 
-class SimpleTest(TestCase):
-    def test_basic_addition(self):
-        """
-        Tests that 1 + 1 always equals 2.
-        """
-        self.assertEqual(1 + 1, 2)
+class HackerNewsTest(TestCase):
+    def test_points_limits(self):
+        for i, pair in enumerate(POINTS_LIMIT_PAIRS):
+            self.assertEqual(pair[0], POINTS_LIMITS[i])

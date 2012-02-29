@@ -1,4 +1,3 @@
-import datetime
 import logging
 import os
 from urllib2 import URLError
@@ -8,16 +7,24 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.utils.encoding import smart_str
+from django.utils.timezone import now
 
+from kindleio.models import logger
 from kindleio.utils.briticle import Briticle
 
-logger = logging.getLogger("HackerNews")
-if not logger.handlers:
-    handler = logging.FileHandler(settings.LOG_BRITICLE)
-    formatter = logging.Formatter('%(asctime)s %(levelname)s\n%(message)s\n')
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
-    logger.setLevel(logging.INFO)
+
+POINTS_LIMITS = (100, 149, 200, 249, 300, 349, 400, 500)
+POINTS_LIMIT_TO_SAVE = POINTS_LIMITS[0]
+POINTS_LIMIT_PAIRS = ((100, "100 (approximately 18 articles per day)"),
+               (149, "149 (approximately 12 articles per day)"),
+               (200, "200 (approximately 7 articles per day)"),
+               (249, "249 (approximately 5 articles per day)"),
+               (300, "300 (approximately 3 articles per day)"),
+               (349, "349 (approximately 2 articles per day)"),
+               (400, "400 (rare)"),
+               (500, "500 (very rare)")
+)
+
 
 class UserConfig(models.Model):
     user = models.OneToOneField(User)
@@ -48,7 +55,7 @@ class HackerNewsManager(models.Manager):
                 count_logged += 1
 
             # Save articles to file whose points big enough
-            if article['points'] >= settings.POINTS_LIMIT_TO_KINDLE and (not news.filed):
+            if article['points'] >= POINTS_LIMIT_TO_SAVE and (not news.filed):
                 try:
                     br = Briticle(news.url)
                 except Exception, e:
@@ -57,10 +64,14 @@ class HackerNewsManager(models.Manager):
                         continue
                     raise
 
-                mobi = br.save_to_file(settings.HACKER_NEWS_DIR, title=news.title)
+                try:
+                    mobi = br.save_to_file(settings.HACKER_NEWS_DIR, title=news.title)
+                except Exception, e:
+                    logger.info("Failed to save fiel: %s URL: %s" % (e, news.url))
+                    continue
                 if mobi:
                     news.filed = True
-                    news.added = datetime.datetime.now()
+                    news.added = now()
                     news.save()
                     count_filed += 1
                 else:

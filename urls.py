@@ -14,6 +14,7 @@ urlpatterns = patterns('',
 
     url(r'^$', 'kindleio.views.home', name='home'),
     url(r'^accounts/', include('kindleio.accounts.urls')),
+    url(r'^hackernews/', include('kindleio.hackernews.urls')),
     url(r'^login/$', 'kindleio.accounts.views.site_login', name='site_login'),
     url(r'^logout/$', 'kindleio.accounts.views.site_logout', name='site_logout'),
 )
