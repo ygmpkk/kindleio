@@ -31,9 +31,10 @@ class RecoredManager(models.Manager):
     def create_receive_list(self, news, points, file_):
         if self.filter(news=news).exists():
             return
-        record = self.create(news=news, file_path=file_)
         from kindleio.hackernews.utils import get_email_list
         email_list = get_email_list(points)
+        flag = len(email_list) == 0
+        record = self.create(news=news, file_path=file_, sent=flag)
         for email in email_list:
             if not SendLog.objects.filter(record=record, email=email).exists():
                 SendLog.objects.create(record=record, email=email)

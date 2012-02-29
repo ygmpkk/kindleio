@@ -15,7 +15,7 @@ from kindleio.accounts.decorators import login_required
 from kindleio.accounts.utils import create_user_via_douban_id, create_user_via_twitter_id
 from kindleio.accounts.models import UserProfile
 from kindleio.hackernews.models import POINTS_LIMIT_PAIRS
-from kindleio.hackernews.utils import get_limit_points, set_user_points
+from kindleio.hackernews.utils import get_limit_points, set_user_points, set_hn_disabled
 
 
 

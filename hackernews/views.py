@@ -32,7 +32,7 @@ def check_for_sending(request):
 
         receivers = [x.email for x in sl]
         try:
-            #send_file_to_kindles(record.file_path, receivers)
+            send_file_to_kindles(record.file_path, receivers)
             count_file += 1
             count_email += len(receivers)
             pass
