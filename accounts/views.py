@@ -14,8 +14,8 @@ from django.core.urlresolvers import reverse
 from kindleio.accounts.decorators import login_required
 from kindleio.accounts.utils import create_user_via_douban_id, create_user_via_twitter_id
 from kindleio.accounts.models import UserProfile
-from kindleio.hackernews.models import UserConfig, POINTS_LIMIT_PAIRS
-from kindleio.hackernews.utils import get_limit_points
+from kindleio.hackernews.models import POINTS_LIMIT_PAIRS
+from kindleio.hackernews.utils import get_limit_points, set_user_points
 
 
 
@@ -46,14 +46,13 @@ def profile(request):
                 error_info = "Invalid email, must ends with @kindle.com"
                 update_succeed = False
 
-        hn_config = UserConfig.objects.get(user=user)
         receive_hn = request.POST.get("receive_hn", None)
+        set_hn_disabled(user, (receive_hn is None))
         if receive_hn:
             points = request.POST.get("points_limit", 500)
-            points = get_limit_points(points)
-            hn_config.points = points
-        hn_config.disabled = (receive_hn is None)
-        hn_config.save()
+            if points:
+                set_user_points(user, points)
+                update_succeed = True
         update_succeed = True
     return render_to_response("profile.html",
                               {'error_info': error_info,

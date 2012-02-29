@@ -13,17 +13,43 @@ from kindleio.models import logger
 from kindleio.utils.briticle import Briticle
 
 
+EMAIL_COUNT_LIMIT = 14
 POINTS_LIMITS = (100, 149, 200, 249, 300, 349, 400, 500)
 POINTS_LIMIT_TO_SAVE = POINTS_LIMITS[0]
-POINTS_LIMIT_PAIRS = ((100, "100 (approximately 18 articles per day)"),
-               (149, "149 (approximately 12 articles per day)"),
-               (200, "200 (approximately 7 articles per day)"),
+POINTS_LIMIT_PAIRS = ((100, "100 (approximately 20 articles per day)"),
+               (149, "149 (approximately 14 articles per day)"),
+               (200, "200 (approximately 8 articles per day)"),
                (249, "249 (approximately 5 articles per day)"),
                (300, "300 (approximately 3 articles per day)"),
                (349, "349 (approximately 2 articles per day)"),
                (400, "400 (rare)"),
                (500, "500 (very rare)")
 )
+
+
+class RecoredManager(models.Manager):
+    def create_receive_list(self, news, points, file_):
+        if self.filter(news=news).exists():
+            return
+        record = self.create(news=news, file_path=file_)
+        from kindleio.hackernews.utils import get_email_list
+        email_list = get_email_list(points)
+        for email in email_list:
+            if not SendLog.objects.filter(record=record, email=email).exists():
+                SendLog.objects.create(record=record, email=email)
+
+    def update_receive_list(self, news, points, former_points=None):
+        if not self.filter(news=news).exists():
+            return
+        record = self.get(news=news)
+        from kindleio.hackernews.utils import get_email_list
+        email_list = get_email_list(points, former_points)
+        for email in email_list:
+            if not SendLog.objects.filter(record=record, email=email).exists():
+                SendLog.objects.create(record=record, email=email)
+        if len(email_list) > 0:
+            record.sent = False
+            record.save()
 
 
 class UserConfig(models.Model):
@@ -41,21 +67,21 @@ class HackerNewsManager(models.Manager):
         3. Update datetime when saving to file
         """
         count_logged = count_filed = 0
+        former_points = None
         for article in article_list:
-            try:
+            if self.filter(url=article['url']).exists():
                 news = self.get(url=article['url'])
+                former_points = news.points
                 news.points = article['points']
                 news.save()
-            except self.model.DoesNotExist:
-                news = self.model(url=article['url'],
+            else:
+                news = self.create(url=article['url'],
                     points=article['points'],
-                    title=smart_str(article['title'])
-                )
-                news.save()
+                    title=smart_str(article['title']))
                 count_logged += 1
 
             # Save articles to file whose points big enough
-            if article['points'] >= POINTS_LIMIT_TO_SAVE and (not news.filed):
+            if article['points'] >= POINTS_LIMIT_TO_SAVE and not news.filed:
                 try:
                     br = Briticle(news.url)
                 except Exception, e:
@@ -73,9 +99,14 @@ class HackerNewsManager(models.Manager):
                     news.filed = True
                     news.added = now()
                     news.save()
+                    Record.objects.create_receive_list(news, news.points, mobi)
                     count_filed += 1
                 else:
                     logger.error("Failed to save file. URL: %s" % news.url)
+
+            if news.filed:
+                Record.objects.update_receive_list(news, news.points, former_points)
+
         return count_logged, count_filed
 
 class HackerNews(models.Model):
@@ -94,6 +125,30 @@ class HackerNews(models.Model):
         return self.title
     __unicode__ = __str__
     __repr__ = __str__
+
+class Record(models.Model):
+    news = models.OneToOneField(HackerNews)
+    file_path = models.CharField(max_length=512)
+    sent = models.BooleanField(default=False)
+    added = models.DateTimeField(auto_now_add=True)
+
+    objects = RecoredManager()
+
+    class Meta:
+        ordering = ["-added"]
+
+    def __str__(self):
+        return str(self.news)
+    __unicode__ = __str__
+    __repr__ = __str__
+
+class SendLog(models.Model):
+    record = models.ForeignKey(Record)
+    email = models.CharField(max_length=80)
+    sent = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ["-id"]
 
 
 def create_user_config(sender, instance, created, **kwargs):

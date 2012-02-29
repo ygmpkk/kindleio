@@ -1,6 +1,10 @@
-from kindleio.hackernews.models import UserConfig, POINTS_LIMITS
+import os
+import shelve
+
+from kindleio.hackernews.models import UserConfig, SendLog, POINTS_LIMITS
 from kindleio.models import logger
 from kindleio.utils import get_soup_by_url
+from kindleio.utils.mail import send_mail
 
 
 def get_limit_points(points):
@@ -14,8 +18,11 @@ def get_limit_points(points):
                 return p
     return POINTS_LIMITS[-1]
 
-def get_email_list(points):
-    ucs = UserConfig.objects.filter(points__lte=points)
+def get_email_list(points, points_from=None):
+    if points_from:
+        ucs = UserConfig.objects.filter(points__lte=points, points__gt=points_from)
+    else:
+        ucs = UserConfig.objects.filter(points__lte=points)
     email_list = []
     for uc in ucs:
         kindle_email = uc.user.get_profile().kindle_email
@@ -23,6 +30,35 @@ def get_email_list(points):
             email_list.append(kindle_email)
     return email_list
 
+def get_user_points(user):
+    if UserConfig.objects.filter(user=user).exists():
+        return UserConfig.objects.get(user=user).points
+    return 0
+
+def set_user_points(user, points):
+    if UserConfig.objects.filter(user=user).exists():
+        uc = UserConfig.objects.get(user=user)
+        uc.points = points
+        uc.save()
+        return True
+    return False
+
+def send_file_to_kindles(doc, receive_list):
+    subject = "Docs of HackerNews from Kindle.io"
+    send_mail(receive_list, subject, subject, files=[doc])
+
+def is_hn_disabled(user):
+    if UserConfig.objects.filter(user=user).exists():
+        return UserConfig.objects.get(user=user).disabled
+    return False
+
+def set_hn_disabled(user, disabled):
+    if UserConfig.objects.filter(user=user).exists():
+        uc = UserConfig.objects.get(user=user)
+        uc.disabled = disabled
+        uc.save()
+        return True
+    return False
 
 class HackerNewsArticle(object):
     POINTS_MIN_LIMIT = 70

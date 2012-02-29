@@ -1,17 +1,10 @@
-import os
-from urllib2 import URLError
-
-from django.conf import settings
-from django.http import HttpResponse, HttpResponseNotFound, Http404
-from django.shortcuts import render_to_response
+from django.http import HttpResponse, Http404
 from django.views.decorators.csrf import csrf_exempt
 
+from kindleio.hackernews.models import HackerNews, Record, SendLog, EMAIL_COUNT_LIMIT
+from kindleio.hackernews.utils import HackerNewsArticle, send_file_to_kindles
 from kindleio.models import logger
-from kindleio.hackernews.models import HackerNews
-from kindleio.hackernews.utils import HackerNewsArticle
-from kindleio.utils.mail import send_mail
 from kindleio.utils.decorators import admin_required
-
 
 @csrf_exempt
 @admin_required
@@ -19,49 +12,36 @@ def fetch(request):
     if request.method == "POST":
         hn = HackerNewsArticle(fetch=True)
         count_logged, count_filed = HackerNews.objects.update_news(hn.articles)
-        return HttpResponse("Find %s news (filed %s).\n" % (count_logged, count_filed))
+        return HttpResponse("Saved %s news (filed %s).\n" % (count_logged, count_filed))
     raise Http404
 
 
 @csrf_exempt
 @admin_required
-def send(request):
-    send_to = settings.KINDLE_SENDING_LIST
-    subject = "Docs of HackerNews from mitnk.com"
-    files = os.listdir(settings.HACKER_NEWS_DIR)
-    files = [os.path.join(settings.HACKER_NEWS_DIR, x) for x in files if (x.endswith('.mobi') or x.endswith(".txt"))]
-    if not files:
-        return HttpResponse("No new articles filed")
+def check_for_sending(request):
+    record_list = Record.objects.filter(sent=False)
+    count_file = 0
+    count_email = 0
+    for record in record_list:
+        less_than_limit = False
+        sl = SendLog.objects.filter(record=record, sent=False)
+        if len(sl) > EMAIL_COUNT_LIMIT:
+            sl = sl[:EMAIL_COUNT_LIMIT]
+        else:
+            less_than_limit = True
 
-    try:
-        info = "%s files sent.\n" % len(files)
-        send_mail(send_to, subject, info, files=files)
-    except Exception, e:
-        info = "send_mail() failed."
-        logger.error(info)
-    else:
-        for f in files:
-            os.remove(f)
-    return HttpResponse(info)
-
-
-def orld(request):
-    if not url.startswith('http'):
-        url = 'http://' + url
-
-    try:
-        br = Briticle(url)
-    except Exception, e:
-        if isinstance(e, URLError) or 'timed out' in str(e):
-            logger.info("URLError or Time out Exception: %s URL: %s" % (e, url))
-            return HttpResponse("Internal Time Out.")
-        raise
-
-    doc_file = br.save_to_file(settings.KINDLE_LIVE_DIR)
-    if doc_file:
-        if not settings.DEBUG:
-            send_mail([settings.MY_KINDLE_MAIL,], "New documentation here", "Sent from mitnk.com", files=[doc_file,])
-            os.remove(doc_file)
-        return HttpResponse("%s Sent!" % doc_file)
-    else:
-        return HttpResponse("Error: No file generated. URL: %s" % url)
+        receivers = [x.email for x in sl]
+        try:
+            #send_file_to_kindles(record.file_path, receivers)
+            count_file += 1
+            count_email += len(receivers)
+            pass
+        except Exception, e:
+            info = "send_mail() failed."
+            logger.error(info)
+        else:
+            sl.update(sent=True)
+            if less_than_limit:
+                record.sent = True
+                record.save()
+    return HttpResponse("%s file sent to %s emails.\n" % (count_file, count_email))
