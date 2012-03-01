@@ -30,30 +30,32 @@ def profile(request):
     error_info = ""
     update_succeed = None
     if request.method == "POST":
-        first_name = request.POST.get("first_name")
-        if first_name:
-            user.first_name = first_name
-            user.save()
-            update_succeed = True
-        kindle_email = request.POST.get("kindle_email")
-        if kindle_email:
-            if ("@" in kindle_email) and kindle_email.endswith("kindle.com"):
-                profile = request.user.get_profile()
-                profile.kindle_email = kindle_email
-                profile.save()
+        if request.POST.has_key("first_name"):
+            first_name = request.POST.get("first_name")
+            if first_name:
+                user.first_name = first_name
+                user.save()
                 update_succeed = True
-            else:
-                error_info = "Invalid email, must ends with @kindle.com"
-                update_succeed = False
+            kindle_email = request.POST.get("kindle_email")
+            if kindle_email:
+                if ("@" in kindle_email) and kindle_email.endswith("kindle.com"):
+                    profile = request.user.get_profile()
+                    profile.kindle_email = kindle_email
+                    profile.save()
+                    update_succeed = True
+                else:
+                    error_info = "Invalid email, must ends with @kindle.com"
+                    update_succeed = False
 
-        receive_hn = request.POST.get("receive_hn", None)
-        set_hn_disabled(user, (receive_hn is None))
-        if receive_hn:
-            points = request.POST.get("points_limit", 500)
-            if points:
-                set_user_points(user, points)
-                update_succeed = True
-        update_succeed = True
+        else:
+            receive_hn = request.POST.get("receive_hn", None)
+            set_hn_disabled(user, (not receive_hn))
+            if receive_hn:
+                points = request.POST.get("points_limit", 500)
+                points = get_limit_points(points)
+                if points:
+                    set_user_points(user, points)
+            update_succeed = True
     return render_to_response("profile.html",
                               {'error_info': error_info,
                                'update_succeed': update_succeed,
