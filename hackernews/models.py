@@ -70,29 +70,35 @@ class HackerNewsManager(models.Manager):
         count_logged = count_filed = 0
         former_points = None
         for article in article_list:
+            logger.info("Enter article:" + article['title'])
             if self.filter(url=article['url']).exists():
                 news = self.get(url=article['url'])
                 former_points = news.points
                 news.points = article['points']
                 news.save()
+                logger.info("[if] news update.")
             else:
                 news = self.create(url=article['url'],
                     points=article['points'],
                     title=smart_str(article['title']))
                 count_logged += 1
+                logger.info("[else] news created.")
 
             # Save articles to file whose points big enough
             if article['points'] >= POINTS_LIMIT_TO_SAVE and not news.filed:
+                logger.info("article points is high enough, and not filed, try to ...")
                 try:
-                    br = Briticle(news.url)
+                    br = Briticle(news.url, sent_by="Kindle.io")
                 except Exception, e:
                     if isinstance(e, URLError) or 'timed out' in str(e):
                         logger.info("URLError or Time out Exception: %s URL: %s" % (e, news.url))
                         continue
                     raise
+                logger.info("... Briticle object fetch ok. len: %s" % len(br.content))
 
                 try:
                     mobi = br.save_to_file(settings.HACKER_NEWS_DIR, title=news.title)
+                    logger.info("... filed it ok!")
                 except Exception, e:
                     logger.info("Failed to save fiel: %s URL: %s" % (e, news.url))
                     continue
@@ -101,12 +107,16 @@ class HackerNewsManager(models.Manager):
                     news.added = now()
                     news.save()
                     Record.objects.create_receive_list(news, news.points, mobi)
+                    logger.info("Record created.")
                     count_filed += 1
                 else:
                     logger.error("Failed to save file. URL: %s" % news.url)
 
             if news.filed:
                 Record.objects.update_receive_list(news, news.points, former_points)
+                logger.info("Record updated.")
+            else:
+                logger.info("This is end, not filed, low points?.")
 
         return count_logged, count_filed
 

@@ -35,9 +35,8 @@ def check_for_sending(request):
             send_file_to_kindles(record.file_path, receivers)
             count_file += 1
             count_email += len(receivers)
-            pass
         except Exception, e:
-            info = "send_mail() failed."
+            info = "send_mail() failed. %s" % e
             logger.error(info)
         else:
             sl.update(sent=True)

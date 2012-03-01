@@ -1,9 +1,6 @@
 # Django settings for kindleio project.
 import os.path
 
-DEBUG = True
-TEMPLATE_DEBUG = DEBUG
-
 DIR_NAME = os.path.dirname(__file__)
 
 LOGIN_URL = "/login/"
