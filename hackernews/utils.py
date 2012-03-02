@@ -1,7 +1,4 @@
-import os
-import shelve
-
-from kindleio.hackernews.models import UserConfig, SendLog, POINTS_LIMITS
+from kindleio.hackernews.models import UserConfig, POINTS_LIMITS
 from kindleio.models import logger
 from kindleio.utils import get_soup_by_url
 from kindleio.utils.mail import send_mail

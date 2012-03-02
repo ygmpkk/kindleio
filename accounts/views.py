@@ -5,6 +5,7 @@ from oauthtwitter import OAuthApi
 import twitter, oauth
 
 from django.conf import settings
+from django.contrib.auth.models import AnonymousUser
 from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponseForbidden
 from django.shortcuts import render_to_response
@@ -15,8 +16,6 @@ from kindleio.accounts.decorators import login_required
 from kindleio.accounts.utils import create_user_via_douban_id, create_user_via_twitter_id
 from kindleio.accounts.models import UserProfile
 from kindleio.hackernews.models import POINTS_LIMIT_PAIRS
-from kindleio.hackernews.utils import get_limit_points, set_user_points, set_hn_disabled
-
 
 
 def register(request):
@@ -28,34 +27,28 @@ def register(request):
 def profile(request):
     user = request.user
     error_info = ""
-    update_succeed = None
+    update_succeed = False
     if request.method == "POST":
-        if request.POST.has_key("first_name"):
-            first_name = request.POST.get("first_name")
-            if first_name:
-                user.first_name = first_name
-                user.save()
-                update_succeed = True
-            kindle_email = request.POST.get("kindle_email")
-            if kindle_email:
-                if ("@" in kindle_email) and kindle_email.endswith("kindle.com"):
-                    profile = request.user.get_profile()
-                    profile.kindle_email = kindle_email
-                    profile.save()
-                    update_succeed = True
-                else:
-                    error_info = "Invalid email, must ends with @kindle.com"
-                    update_succeed = False
-
-        else:
-            receive_hn = request.POST.get("receive_hn", None)
-            set_hn_disabled(user, (not receive_hn))
-            if receive_hn:
-                points = request.POST.get("points_limit", 500)
-                points = get_limit_points(points)
-                if points:
-                    set_user_points(user, points)
+        first_name = request.POST.get("first_name")
+        if first_name:
+            user.first_name = first_name
+            user.save()
             update_succeed = True
+        kindle_email = request.POST.get("kindle_email")
+        if kindle_email:
+            if ("@" in kindle_email) and kindle_email.endswith("kindle.com"):
+                profile = request.user.get_profile()
+                profile.kindle_email = kindle_email
+                profile.save()
+                update_succeed = True
+            else:
+                error_info = "Invalid email, must ends with @kindle.com"
+
+    if not error_info and \
+        request.session.has_key('config_updated') and \
+        request.session['config_updated']:
+        update_succeed = True
+        del request.session['config_updated']
     return render_to_response("profile.html",
                               {'error_info': error_info,
                                'update_succeed': update_succeed,
@@ -65,6 +58,9 @@ def profile(request):
 
 
 def site_login(request):
+    if not isinstance(request.user, AnonymousUser):
+        return HttpResponseRedirect("/")
+
     if request.method == "POST":
         username = request.POST['username']
         password = request.POST['password']

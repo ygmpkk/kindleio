@@ -39,7 +39,7 @@ footer a {margin-left:10px;}
 
         <div class="tab-content">
             <div class="tab-pane active" id="profile">
-                <form method="post" class="form-horizontal">{% csrf_token %}
+                <form method="post" action="{% url accounts_profile %}" class="form-horizontal">{% csrf_token %}
                     <label for="first_name">First Name</label>
                     <input type="text" id="first_name" name="first_name" class="span3" value="{{ request.user.first_name }}">
                     <p class="help-block">Will show up on the website. Not the sign in username.</p>
@@ -56,7 +56,7 @@ footer a {margin-left:10px;}
             </div>
 
             <div class="tab-pane" id="hackernews">
-                <form method="post" class="form-horizontal">{% csrf_token %}
+                <form method="post" action="{% url hackernews_config %}" class="form-horizontal">{% csrf_token %}
                     <label for="receive_hn" class="checkbox">
                         <input type="checkbox" id="receive_hn" name="receive_hn" {% if not request.user.get_profile.hn_disabled %}checked="checked"{% endif %}>
                         Receive Hacker News
