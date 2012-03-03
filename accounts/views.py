@@ -5,6 +5,7 @@ from oauthtwitter import OAuthApi
 import twitter, oauth
 
 from django.conf import settings
+from django.contrib import messages
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponseForbidden
@@ -26,34 +27,24 @@ def register(request):
 @login_required
 def profile(request):
     user = request.user
-    error_info = ""
-    update_succeed = False
-    if request.method == "POST":
+    if request.POST.has_key("first_name") and request.POST.has_key("kindle_email"):
         first_name = request.POST.get("first_name")
-        if first_name:
-            user.first_name = first_name
-            user.save()
-            update_succeed = True
+        user.first_name = first_name
+        user.save()
         kindle_email = request.POST.get("kindle_email")
-        if kindle_email:
-            if ("@" in kindle_email) and kindle_email.endswith("kindle.com"):
-                profile = request.user.get_profile()
-                profile.kindle_email = kindle_email
-                profile.save()
-                update_succeed = True
-            else:
-                error_info = "Invalid email, must ends with @kindle.com"
-
-    if not error_info and \
-        request.session.has_key('config_updated') and \
-        request.session['config_updated']:
-        update_succeed = True
-        del request.session['config_updated']
+        if not kindle_email:
+            messages.error(request, "Please set up you Send To Kindle Email.")
+            return HttpResponseRedirect(reverse("accounts_profile"))
+        elif ("@" not in kindle_email) or not kindle_email.endswith("kindle.com"):
+            messages.error(request, "Invalid email, must ends with @kindle.com or @free.kindle.com")
+            return HttpResponseRedirect(reverse("accounts_profile"))
+        else:
+            profile = request.user.get_profile()
+            profile.kindle_email = kindle_email
+            profile.save()
+            messages.success(request, "Your profile was updated successfully")
     return render_to_response("profile.html",
-                              {'error_info': error_info,
-                               'update_succeed': update_succeed,
-                               "points_list": POINTS_LIMIT_PAIRS,
-                              },
+                              { "points_list": POINTS_LIMIT_PAIRS, },
                               context_instance=RequestContext(request))
 
 

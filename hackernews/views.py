@@ -1,5 +1,6 @@
 import time
 
+from django.contrib import messages
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.views.decorators.csrf import csrf_exempt
@@ -23,9 +24,8 @@ def config(request):
             points = get_limit_points(points)
             if points:
                 set_user_points(user, points)
-        request.session['config_updated'] = True
-    url = reverse("accounts_profile")
-    return HttpResponseRedirect(url)
+        messages.success(request, "Your HackerNews profile was updated successfully")
+    return HttpResponseRedirect(reverse("accounts_profile"))
 
 @csrf_exempt
 @admin_required

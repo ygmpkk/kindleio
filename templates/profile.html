@@ -19,17 +19,12 @@ footer a {margin-left:10px;}
     <div class="span6 offset3">
         <h1 class="logo">Kindle.io <span>Hello, {{ request.user.first_name }}</span></h1>
 
-        {% if error_info %}
-        <div class="alert alert-error">{{ error_info }}
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}
             <a class="close" data-dismiss="alert">×</a>
         </div>
-        {% endif %}
-
-        {% if update_succeed %}
-        <div class="alert alert-success">
-            <a class="close" data-dismiss="alert">×</a>
-            You settings have been saved successfully!
-        </div>
+        {% endfor %}
         {% endif %}
 
         <ul class="nav nav-tabs">

@@ -17,9 +17,9 @@ def get_limit_points(points):
 
 def get_email_list(points, points_from=None):
     if points_from:
-        ucs = UserConfig.objects.filter(points__lte=points, points__gt=points_from)
+        ucs = UserConfig.objects.filter(disabled=False, points__lte=points, points__gt=points_from)
     else:
-        ucs = UserConfig.objects.filter(points__lte=points)
+        ucs = UserConfig.objects.filter(disabled=False, points__lte=points)
     email_list = []
     for uc in ucs:
         kindle_email = uc.user.get_profile().kindle_email
