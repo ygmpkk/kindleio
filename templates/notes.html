@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Kindle Notes{% endblock %}
+
+{% block style %}
+<style>
+* {font-size:14px;}
+body {background: url("/media/img/bg.png");}
+.logo {text-align:center;margin:50px 0px 30px;}
+.logo span {float:right; color:#E47911;}
+.tab-content {margin:0px 6px 0;}
+.tab-content label {margin:8px 0 4px;}
+footer {text-align:center;}
+footer a {margin-left:10px;}
+.help-block span {color:#E47911;}
+.form-actions {padding-left:20px !important;}
+
+.info_column {float:left; width:50%; font-size:14px;}
+.note {padding:10px; line-height:18px;}
+.note .openQuote {background: url("/media/img/AmazonLeftQuote.png") no-repeat scroll 100% 0 transparent; padding-right: 18px; margin-right:6px;}
+.note .closeQuote {background: url("/media/img/AmazonRightQuote.png") no-repeat scroll 100% 0 transparent; padding-right:18px; margin-right:8px;}
+.note .added {color:#EE4400;}
+.note .book {color:#F6C100;}
+
+.paginator{ font-size:11px;padding-top:10px;padding-bottom:10px;line-height:22px;margin:0;border-top:1px solid #ddd;}
+.paginator a:link,.paginator a:visited{padding:2px 6px;border:solid 1px #ccc;background:#aaa;text-decoration:none;}
+.paginator .end{border-width:2px!important;margin-right:6px;}
+.paginator .this-page{padding:2px 6px;font-weight:bold;font-size:13px;vertical-align:top;}
+.paginator a:hover{color:white;border-color:#036;}
+</style>
+{% endblock %}
+
+{% block content %}
+  {% load pagination_tags %}
+  {% autopaginate notes 20 %}
+
+<div class="row">
+    <div class="span10 offset1 home">
+        <h1 class="logo">Kindle Notes<span>Hello, {{ request.user.first_name }}</span></h1>
+
+        <div class="info_column">
+        {% for note in notes|slice:":10" %}
+        <div class="note">
+          <span class="openQuote">&nbsp;</span>
+          <span class="text">{{ note.text }}</span>
+          <span class="closeQuote">&nbsp;</span>
+          {% if note.book %}From <span class="book">{{ note.book }}</span>{% endif %}
+          <br/>
+          <span class="added">{{  note.added|date:"N j, Y" }}</span>
+        </div>
+        {% endfor %}
+        </div>
+
+        <div class="info_column">
+        {% for note in notes|slice:"10:" %}
+        <div class="note">
+          <span class="openQuote">&nbsp;</span>
+          <span class="text">{{ note.text }}</span>
+          <span class="closeQuote">&nbsp;</span>
+          {% if note.book %}From <span class="book">{{ note.book }}</span>{% endif %}
+          <br/>
+          <span class="added">{{  note.added|date:"N j, Y" }}</span>
+        </div>
+        {% endfor %}
+        </div>
+
+        <div style="clear:both;"> </div>
+        {% paginate %}
+
+        <hr>
+        <footer class="footer">
+            <p>&copy; 2012 kindle.io <a href="/accounts/profile/">Profile</a> <a href="/notes/">Notes</a> <a href="/logout/">Sign Out</a></p>
+        </footer>
+    </div>
+</div>
+{% endblock %}

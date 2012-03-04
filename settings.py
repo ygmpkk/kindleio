@@ -93,6 +93,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.tz',
     'django.core.context_processors.request',
     'django.contrib.messages.context_processors.messages',
+    'kindleio.pagination.paginate',
 )
 
 
@@ -110,10 +111,11 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # Uncomment the next line to enable the admin:
     'django.contrib.admin',
+    "kindleio.pagination",
     "kindleio.accounts",
     "kindleio.hackernews",
+    "kindleio.notes",
 )
 
 # A sample logging configuration. The only tangible logging

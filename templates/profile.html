@@ -30,6 +30,7 @@ footer a {margin-left:10px;}
         <ul class="nav nav-tabs">
             <li class="active"><a href="#profile" data-toggle="tab">Profile</a></li>
             <li><a href="#hackernews" data-toggle="tab">Hacker News</a></li>
+            <li><a href="#notes" data-toggle="tab">Notes</a></li>
         </ul>
 
         <div class="tab-content">
@@ -72,11 +73,34 @@ footer a {margin-left:10px;}
                     </div>
                 </form>
             </div>
+
+            <div class="tab-pane" id="notes">
+                <form method="post" action="{% url notes_config %}" class="form-horizontal">{% csrf_token %}
+                    <label for="twitter_id">Your Twitter ID</label>
+                    <input type="text" id="twitter_id" name="twitter_id" value="{{ request.user.get_profile.twitter_id }}">
+                    <p class="help-block">
+                        You must have your twitter id set to use Notes Service of Kindle.io<br>
+                        Here is the steps:
+                        <ol>
+                            <li>Set this Twitter account as your <a href="https://kindle.amazon.com/home/preferences">Kindle Share Social Network</a>.</li>
+                            <li>HighLight text while you are reading on Kindle, and, Share it.</li>
+                            <li>As a result, a tweet will be created, Kindle.io rely on this tweet to provide the notes service.</li>
+                            <li>The official twitter account named kindleio will follow you to trace your kindle shares. Not to block it ;)</li>
+                            <li>If you would highlight and share a lot, which may disturb your followers. Create a second twitter account.</li>
+                        </ol>
+                    </p>
+                    <div class="form-actions">
+                        <input type="submit" class="btn btn-primary" value="Save changes">
+                        <a href="" class="btn">Cancel</a>
+                    </div>
+                </form>
+            </div>
+
         </div>
 
         <hr>
         <footer class="footer">
-            <p>&copy; 2012 kindle.io <a href="/">Home</a> <a href="/logout/">Sign Out</a></p>
+            <p>&copy; 2012 kindle.io <a href="/accounts/profile/">Profile</a> <a href="/notes/">Notes</a> <a href="/logout/">Sign Out</a></p>
         </footer>
     </div>
 </div>

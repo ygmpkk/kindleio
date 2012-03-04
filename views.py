@@ -1,3 +1,4 @@
+import os
 from urllib2 import URLError
 
 from django.conf import settings
@@ -8,6 +9,7 @@ from django.shortcuts import render_to_response
 from django.template import RequestContext
 from kindleio.accounts.decorators import login_required
 from kindleio.utils.briticle import Briticle
+from kindleio.utils.mail import send_mail
 
 @login_required
 def home(request):
