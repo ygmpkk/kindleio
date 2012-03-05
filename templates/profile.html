@@ -77,7 +77,7 @@ footer a {margin-left:10px;}
             <div class="tab-pane" id="notes">
                 <form method="post" action="{% url notes_config %}" class="form-horizontal">{% csrf_token %}
                     <label for="twitter_id">Your Twitter ID</label>
-                    <input type="text" id="twitter_id" name="twitter_id" value="{{ request.user.get_profile.twitter_id }}">
+                    <input type="text" id="twitter_id" name="twitter_id" value="{% if request.user.get_profile.twitter_id %}{{ request.user.get_profile.twitter_id }}{% endif %}">
                     <p class="help-block">
                         You must have your twitter id set to use Notes Service of Kindle.io<br>
                         Here is the steps:
@@ -100,7 +100,7 @@ footer a {margin-left:10px;}
 
         <hr>
         <footer class="footer">
-            <p>&copy; 2012 kindle.io <a href="/accounts/profile/">Profile</a> <a href="/notes/">Notes</a> <a href="/logout/">Sign Out</a></p>
+            <p>&copy; 2012 kindle.io <a href="/about/">About</a> <a href="/accounts/profile/">Profile</a> <a href="/notes/">Notes</a> <a href="/logout/">Sign Out</a></p>
         </footer>
     </div>
 </div>

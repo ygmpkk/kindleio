@@ -12,6 +12,7 @@ from django.template import RequestContext
 from django.views.decorators.csrf import csrf_exempt
 
 from kindleio.accounts.decorators import login_required
+from kindleio.accounts.models import UserProfile
 from kindleio.utils import get_soup_by_url
 from kindleio.utils.decorators import admin_required
 from kindleio.notes.models import Note, Word
@@ -33,14 +34,18 @@ def config(request):
     if request.method == "POST":
         user = request.user
         twitter_id = request.POST.get("twitter_id")
+        twitter_id = twitter_id.replace('@', '')
         if twitter_id:
-            profile = request.user.get_profile()
-            profile.twitter_id = twitter_id
-            profile.save()
-            if not settings.DEBUG:
-                api = get_twitter_private_api()
-                api.CreateFriendship(twitter_id)
-            messages.success(request, "Your twitter id was set successfully")
+            if UserProfile.objects.filter(twitter_id=twitter_id).exists():
+                messages.error(request, "This twitter id was already set by others.")
+            else:
+                profile = request.user.get_profile()
+                profile.twitter_id = twitter_id
+                profile.save()
+                if not settings.DEBUG:
+                    api = get_twitter_private_api()
+                    api.CreateFriendship(twitter_id)
+                messages.success(request, "Your twitter id was set successfully")
     return HttpResponseRedirect(reverse("accounts_profile"))
 
 

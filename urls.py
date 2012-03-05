@@ -13,6 +13,7 @@ urlpatterns = patterns('',
     url(r'^admin/', include(admin.site.urls)),
 
     url(r'^$', 'kindleio.views.home', name='home'),
+    url(r'^about/$', 'kindleio.views.about', name='about'),
     url(r'^accounts/', include('kindleio.accounts.urls')),
     url(r'^hackernews/', include('kindleio.hackernews.urls')),
     url(r'^notes/', include('kindleio.notes.urls')),
