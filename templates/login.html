@@ -4,14 +4,14 @@
 <style>
 * {font-size:14px;}
 body {background: url("/media/img/bg.png");}
-.logo {float:left; margin: 40px 0 0;}
+.logo {float:left; margin: 40px 0 40px;}
 .header-action {float:right; margin: 40px 0 0;}
+
 #login {
     background: none repeat scroll 0 0 rgba(166, 156, 141, 0.12);
     border-bottom: 1px solid #FFFFFF;
     border-radius: 2px 2px 2px 2px;
     box-shadow: 0 1px 1px rgba(166, 156, 141, 0.3) inset;
-    margin: 30px 0;
     padding: 25px 30px;
 }
 
@@ -63,17 +63,22 @@ form .clearfix { margin-bottom: 14px; }
     <div class="span6 offset3">
         <div class="clearfix">
             <h1 class="logo">Kindle.io</h1>
-            <a href="/signup/" class="btn header-action">Sign Up</a>
+            <a class="btn header-action" href="#signup" data-toggle="modal">Sign Up</a>
         </div>
 
-        <div id="login">
-            {% if login_error_info %}
-            <div class="alert alert-error">{{ login_error_info }}</div>
+            {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">{{ message }}
+                <a class="close" data-dismiss="alert">×</a>
+            </div>
+            {% endfor %}
             {% endif %}
+        <div id="login">
+            
             <form method="POST" action=".">{% csrf_token %}
                 <h2>Sign In</h2>
                 <div class="clearfix">
-                    <label for="username">Username or email</label>
+                    <label for="username">Username</label>
                     <div class="input"><input type="text" maxlength="30" name="username" id="id_username"></div>
                 </div>
                 <div class="clearfix">
@@ -98,9 +103,28 @@ form .clearfix { margin-bottom: 14px; }
             </div>
         </div>
 
+        <div class="modal hide fade" id="signup" style="display: none;">
+          <form method="post" action="{% url accounts_signup %}">{% csrf_token %}
+            <div class="modal-header">
+              <a data-dismiss="modal" class="close">×</a>
+              <h3>Sign Up</h3>
+            </div>
+            <div class="modal-body">
+                <label>Username</label>
+                <input type="text" name="username">
+                <label>Password</label>
+                <input type="password" name="password">
+            </div>
+            <div class="modal-footer">
+              <a data-dismiss="modal" class="btn" href="#">Close</a>
+              <input type="submit" class="btn btn-primary" value="Create Account">
+            </div>
+          </form>
+        </div>
+
         <hr/>
         <footer class="footer">
-            <p>&copy; 2012 kindle.io</p>
+            <p>&copy; 2012 kindle.io <a href="/about/">About</a></p>
         </footer>
     </div>
 </div>

@@ -42,7 +42,7 @@ footer a {margin-left:10px;}
 
                     <p></p>
                     <label for="kindle_email">Send to Kindle E-mail</label>
-                    <input type="text" id="kindle_email" name="kindle_email" class="span3" placeholder="@kindle.com" value="{{ request.user.get_profile.kindle_email }}">
+                    <input type="text" id="kindle_email" name="kindle_email" class="span3" placeholder="@free.kindle.com" value="{% if request.user.get_profile.kindle_email %}{{ request.user.get_profile.kindle_email }}{% endif %}">
                     <p class="help-block">Make sure to add <span>info@kindle.io</span> into your "Approved Personal Document E-mail List" via <a href="http://www.amazon.com/myk">Manage Your Kindle page</a>. So that your kindle can receive documents sent from kindle.io</p>
                     <div class="form-actions">
                         <input type="submit" class="btn btn-primary" value="Save changes">

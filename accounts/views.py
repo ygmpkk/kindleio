@@ -6,7 +6,7 @@ import twitter, oauth
 
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth.models import AnonymousUser
+from django.contrib.auth.models import AnonymousUser, User
 from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponseForbidden
 from django.shortcuts import render_to_response
@@ -19,9 +19,23 @@ from kindleio.accounts.models import UserProfile
 from kindleio.hackernews.models import POINTS_LIMIT_PAIRS
 
 
-def register(request):
-    # Cannot allow user rgister usernames begin with "douban_" or "twitter_"
-    pass
+def signup(request):
+    url = reverse("site_login")
+    if request.method == "POST":
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+        if not username or not password:
+            messages.error(request, "username and password cannot be blank")
+        elif username.startswith("twitter_") or username.startswith("douban_") or \
+            User.objects.filter(username=username).exists():
+            messages.error(request, "This username already exists.")
+        else:
+            user = User.objects.create_user(username, password=password)
+            messages.success(request, "Account has been created successfully!")
+            url = reverse("accounts_profile")
+            user = authenticate(username=username, password=password)
+            login(request, user)
+    return HttpResponseRedirect(url)
 
 
 @login_required
@@ -31,12 +45,15 @@ def profile(request):
         first_name = request.POST.get("first_name")
         user.first_name = first_name
         user.save()
-        kindle_email = request.POST.get("kindle_email")
+        kindle_email = request.POST.get("kindle_email", "").strip()
         if not kindle_email:
-            messages.error(request, "Please set up you Send To Kindle Email.")
+            messages.error(request, "Please set up you Send to Kindle Email.")
             return HttpResponseRedirect(reverse("accounts_profile"))
-        elif ("@" not in kindle_email) or not kindle_email.endswith("kindle.com"):
-            messages.error(request, "Invalid email, must ends with @kindle.com or @free.kindle.com")
+        elif (not kindle_email.endswith("@free.kindle.com")) and (not kindle_email.endswith("@kindle.com")):
+            messages.error(request, "Invalid email, must end with @kindle.com or @free.kindle.com")
+            return HttpResponseRedirect(reverse("accounts_profile"))
+        elif UserProfile.objects.filter(kindle_email__startswith=kindle_email.split("@")[0] + '@'):
+            messages.error(request, "This kindle email has already used by others.")
             return HttpResponseRedirect(reverse("accounts_profile"))
         else:
             profile = request.user.get_profile()
@@ -61,7 +78,7 @@ def site_login(request):
             next_url = request.session.get("next_url", "")
             return HttpResponseRedirect(next_url or "/")
         else:
-            request.session["login_error_info"] = "Invalid username or password, please try again."
+            messages.error(request, "Invalid username or password, please try again.")
             site_login = reverse("site_login")
             next_url = request.session.get("next_url", "")
             if next_url:
@@ -71,11 +88,7 @@ def site_login(request):
         next_url = request.GET.get("next", "")
         if next_url:
             request.session["next_url"] = next_url
-        login_error_info = request.session.get("login_error_info")
-        if login_error_info:
-            del request.session['login_error_info']
     return render_to_response('login.html',
-                              {"login_error_info": login_error_info},
                               context_instance=RequestContext(request))
 
 

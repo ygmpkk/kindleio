@@ -2,6 +2,7 @@ from django.conf.urls import patterns, url
 
 urlpatterns = patterns('kindleio.accounts.views',
     url(r'^login/$', 'site_login', name='accounts_login'),
+    url(r'^signup/$', 'signup', name='accounts_signup'),
     url(r'^logout/$', 'site_logout', name='accounts_logout'),
     url(r'^profile/$', 'profile', name='accounts_profile'),
 

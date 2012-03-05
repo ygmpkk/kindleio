@@ -33,13 +33,13 @@ def index(request):
 def config(request):
     if request.method == "POST":
         user = request.user
+        profile = request.user.get_profile()
         twitter_id = request.POST.get("twitter_id")
         twitter_id = twitter_id.replace('@', '')
-        if twitter_id:
+        if twitter_id and profile.twitter_id != twitter_id:
             if UserProfile.objects.filter(twitter_id=twitter_id).exists():
                 messages.error(request, "This twitter id was already set by others.")
             else:
-                profile = request.user.get_profile()
                 profile.twitter_id = twitter_id
                 profile.save()
                 if not settings.DEBUG:
