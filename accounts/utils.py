@@ -10,7 +10,7 @@ def create_user_via_douban_id(douban_id):
     if User.objects.filter(username=username).exists():
         user = User.objects.get(username=username)
     else:
-        user = User.objects.create(username=username)
+        user = User.objects.create_user(username=username)
 
     try:
         profile = user.get_profile()
@@ -29,7 +29,7 @@ def create_user_via_twitter_id(twitter_id):
     if User.objects.filter(username=username).exists():
         user = User.objects.get(username=username)
     else:
-        user = User.objects.create(username=username)
+        user = User.objects.create_user(username=username)
 
     try:
         profile = user.get_profile()

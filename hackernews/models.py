@@ -118,6 +118,10 @@ class UserConfig(models.Model):
     disabled = models.BooleanField(default=False)
     points = models.IntegerField(default=300)
 
+    def __unicode__(self):
+        return u"HackerNews Config " + self.user.username
+
+
 @receiver(signals.points_updated)
 def update_receive_list(sender, pre_points, **kwargs):
     from kindleio.hackernews.utils import get_email_list

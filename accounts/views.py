@@ -43,23 +43,29 @@ def profile(request):
     user = request.user
     if request.POST.has_key("first_name") and request.POST.has_key("kindle_email"):
         first_name = request.POST.get("first_name")
-        user.first_name = first_name
-        user.save()
+        if user.first_name != first_name:
+            user.first_name = first_name
+            user.save()
+
         kindle_email = request.POST.get("kindle_email", "").strip()
-        if not kindle_email:
-            messages.error(request, "Please set up you Send to Kindle Email.")
-            return HttpResponseRedirect(reverse("accounts_profile"))
-        elif (not kindle_email.endswith("@free.kindle.com")) and (not kindle_email.endswith("@kindle.com")):
-            messages.error(request, "Invalid email, must end with @kindle.com or @free.kindle.com")
-            return HttpResponseRedirect(reverse("accounts_profile"))
-        elif UserProfile.objects.filter(kindle_email__startswith=kindle_email.split("@")[0] + '@'):
-            messages.error(request, "This kindle email has already used by others.")
-            return HttpResponseRedirect(reverse("accounts_profile"))
+        profile = request.user.get_profile()
+        if profile.kindle_email == kindle_email:
+            pass
         else:
-            profile = request.user.get_profile()
-            profile.kindle_email = kindle_email
-            profile.save()
-            messages.success(request, "Your profile was updated successfully")
+            if not kindle_email:
+                messages.error(request, "Please set up you Send to Kindle Email.")
+            elif (not kindle_email.endswith("@free.kindle.com")) and (not kindle_email.endswith("@kindle.com")):
+                messages.error(request, "Invalid email, must end with @kindle.com or @free.kindle.com")
+            elif not kindle_email.split("@")[0]:
+                messages.error(request, "Invalid email")
+            elif UserProfile.objects.filter(kindle_email__startswith=kindle_email.split("@")[0] + '@'):
+                messages.error(request, "This kindle email has already used by others.")
+            else:
+                profile = request.user.get_profile()
+                profile.kindle_email = kindle_email
+                profile.save()
+                messages.success(request, "Your profile was updated successfully")
+        return HttpResponseRedirect(reverse("accounts_profile"))
     return render_to_response("profile.html",
                               { "points_list": POINTS_LIMIT_PAIRS, },
                               context_instance=RequestContext(request))
