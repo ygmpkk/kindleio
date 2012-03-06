@@ -14,7 +14,7 @@ from django.template import RequestContext
 from django.core.urlresolvers import reverse
 
 from kindleio.accounts.decorators import login_required
-from kindleio.accounts.utils import create_user_via_douban_id, create_user_via_twitter_id
+from kindleio.accounts.utils import create_or_update_user
 from kindleio.accounts.models import UserProfile
 from kindleio.hackernews.models import POINTS_LIMIT_PAIRS
 
@@ -125,7 +125,7 @@ def douban_callback(request):
 
     # Create a user if not exist
     douban_id = request.session['douban_user_id']
-    create_user_via_douban_id(douban_id)
+    create_or_update_user(douban_id, "douban")
         
     if "douban_request_secret" in request.session:
         del request.session["douban_request_secret"]
@@ -168,7 +168,7 @@ def twitter_callback(request):
     api = get_twitter_api(request)
     user = api.GetUserInfo()
     request.session["twitter_id"] = user.screen_name
-    create_user_via_twitter_id(user.screen_name)
+    create_or_update_user(user.screen_name, "twitter")
     next_url = request.session.get("next_url", "")
     if not next_url:
         next_url = reverse("accounts_profile")

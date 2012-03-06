@@ -1,12 +1,19 @@
+from django.contrib.auth.signals import user_logged_in
 from django.contrib.auth.models import User
 from kindleio.accounts.models import UserProfile
 
 
-def create_user_via_douban_id(douban_id):
-    if not douban_id:
+def create_or_update_user(user_id, attr):
+    """
+    Currently, attr must be one of ("douban", "twitter")
+    """
+    if not user_id or not attr:
         return
 
-    username = "douban_" + douban_id
+    if attr not in ("douban", "twitter"):
+        return
+    
+    username = attr + "_" + user_id
     if User.objects.filter(username=username).exists():
         user = User.objects.get(username=username)
     else:
@@ -16,25 +23,11 @@ def create_user_via_douban_id(douban_id):
         profile = user.get_profile()
     except UserProfile.DoesNotExist:
         profile = UserProfile.objects.create(user=user)
-    if not profile.douban_id:
-        profile.douban_id = douban_id
+    
+    attr_name = attr + '_id'
+    if getattr(profile, attr_name) != user_id:
+        setattr(profile, attr_name, user_id)
         profile.save()
+    user_logged_in.send(sender=user.__class__, user=user)
+    return user
 
-
-def create_user_via_twitter_id(twitter_id):
-    if not twitter_id:
-        return
-
-    username = "twitter_" + twitter_id
-    if User.objects.filter(username=username).exists():
-        user = User.objects.get(username=username)
-    else:
-        user = User.objects.create_user(username=username)
-
-    try:
-        profile = user.get_profile()
-    except UserProfile.DoesNotExist:
-        profile = UserProfile.objects.create(user=user)
-    if not profile.twitter_id:
-        profile.twitter_id = twitter_id
-        profile.save()
