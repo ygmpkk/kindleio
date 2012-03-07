@@ -4,30 +4,13 @@
 
 {% block style %}
 <style>
-* {font-size:14px;}
-body {background: url("/media/img/bg.png");}
-.logo {text-align:center;margin:50px 0px 30px;}
-.logo span {float:right; color:#E47911;}
-.tab-content {margin:0px 6px 0;}
-.tab-content label {margin:8px 0 4px;}
-footer {text-align:center;}
-footer a {margin-left:10px;}
-.help-block span {color:#E47911;}
-.form-actions {padding-left:20px !important;}
-
-.info_column {float:left; width:50%; font-size:14px;}
-.note {padding:10px; line-height:18px;}
-.note .openQuote {background: url("/media/img/AmazonLeftQuote.png") no-repeat scroll 100% 0 transparent; padding-right: 18px; margin-right:6px;}
-.note .closeQuote {background: url("/media/img/AmazonRightQuote.png") no-repeat scroll 100% 0 transparent; padding-right:18px; margin-right:8px;}
-.note .added {color:#EE4400;}
-.book {color:#F6C100;}
-h4 {float: right;}
-
-.paginator{ font-size:11px;padding-top:10px;padding-bottom:10px;line-height:22px;margin:0;border-top:1px solid #ddd;}
-.paginator a:link,.paginator a:visited{padding:2px 6px;border:solid 1px #ccc;background:#aaa;text-decoration:none;}
-.paginator .end{border-width:2px!important;margin-right:6px;}
-.paginator .this-page{padding:2px 6px;font-weight:bold;font-size:13px;vertical-align:top;}
-.paginator a:hover{color:white;border-color:#036;}
+.note .text {
+    font-size:15px; 
+    line-height:24px;
+    font-family: Verdana, Verdana, Geneva, sans-serif;
+}
+.book-nav {margin:0 0 20px; text-align:right;}
+.book-nav .book {color:#E47911; }
 </style>
 {% endblock %}
 
@@ -36,54 +19,39 @@ h4 {float: right;}
   {% autopaginate notes 20 %}
 
 <div class="row">
-    <div class="span10 offset1 home">
-        <h1 class="logo">Kindle Notes<span>Hello, {{ request.user.first_name }}</span></h1>
+    <div class="span8 offset2 home">
+        <h1 class="logo">Kindle Notes<span class="tip pull-right">Hello, {{ request.user.first_name }}</span></h1>
 
         {% if not notes %}
-        <p>Kindle.io can record all your Highlight from your Kindle. Read more and set up on the <a href="/accounts/profile/">Notes profile page</a>, then your Highlights will show up <a href="/notes/">here</a>.</p>
+        <div class="note">
+        <p class="text">Kindle.io can record all your Highlight from your Kindle. 
+            Read more and set up on the Notes Tab of <a href="/accounts/profile/">the profile page</a>,
+            then your Highlights will show up <a href="/notes/">here</a>.</p>
+        </div>
         {% endif %}
 
         {% if request.META.QUERY_STRING and notes %}
-        <h4>Notes from Book "<span class="book">{{ notes.0.book }}</span>". View <a href="{% url notes_index %}">all notes</a>.</h4>
+        <div class="book-nav">
+            <h4>Notes from Book &quot;<span class="book">{{ notes.0.book }}</span>&quot;.
+            View <a href="{% url notes_index %}">all notes</a></h4>
+        </div>
         {% endif %}
 
-        <div class="info_column">
-        {% for note in notes|slice:":10" %}
-        <div class="note">
-          <span class="openQuote">&nbsp;</span>
-          <span class="text">{{ note.text }}</span>
-          <span class="closeQuote">&nbsp;</span>
-          {% if note.book %}
-            From <span class="book"><a href="{% url notes_index %}?book={{ note.book }}">{{ note.book }}</a></span>
-          {% endif %}
-          <br/>
-          <span class="added">{{  note.added|date:"N j, Y" }}</span>
-        </div>
+        <div class="row">
+        {% for note in notes %}
+            <div class="note">
+              <span class="text">{{ note.text }}</span>
+              <br>
+              <br>
+              <span class="added pull-right">{{  note.added|date:"N j, Y" }}</span>
+              {% if note.book %}
+              <span class="book">From <a href="{% url notes_index %}?book={{ note.book }}">{{ note.book }}</a></span>
+              {% endif %}
+              <hr>
+            </div>
         {% endfor %}
         </div>
-
-        <div class="info_column">
-        {% for note in notes|slice:"10:" %}
-        <div class="note">
-          <span class="openQuote"> </span>
-          <span class="text">{{ note.text }}</span>
-          <span class="closeQuote"> </span>
-          {% if note.book %}
-            From <span class="book"><a href="{% url notes_index %}?book={{ note.book }}">{{ note.book }}</a></span>
-          {% endif %}
-          <br/>
-          <span class="added">{{  note.added|date:"N j, Y" }}</span>
-        </div>
-        {% endfor %}
-        </div>
-
-        <div style="clear:both;"> </div>
         {% paginate %}
-
-        <hr>
-        <footer class="footer">
-            <p>&copy; 2012 kindle.io <a href="/about/">About</a> <a href="/">Home</a> <a href="/accounts/profile/">Profile</a> <a href="/notes/">Notes</a> <a href="/logout/">Sign Out</a></p>
-        </footer>
     </div>
 </div>
 {% endblock %}

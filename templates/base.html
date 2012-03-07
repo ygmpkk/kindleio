@@ -4,17 +4,23 @@
     <title>{% block title %}Kindle.io{% endblock %}</title>
     <link rel="stylesheet" href="/media/css/bootstrap.css" type="text/css" />
     <link rel="stylesheet" href="/media/css/bootstrap-responsive.css" type="text/css" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="/media/js/jquery.js"></script>
     <script src="/media/js/bootstrap.js"></script>
-    {% block style %}
-    {% endblock %}
+    {% block style %}{% endblock %}
 </head>
 <body>
 
 <div class="container">
 {% block content %}
 {% endblock %}
+
+<hr>
+<footer class="footer">
+    <p>&copy; 2012 kindle.io <a href="/about/">About</a> <a href="/">Home</a> <a href="/accounts/profile/">Profile</a> <a href="/notes/">Notes</a> <a href="/logout/">Sign Out</a></p>
+</footer>
+
 </div>
 
 {% block scripts_bottom %}

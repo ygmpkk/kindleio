@@ -17,6 +17,15 @@ class Note(models.Model):
     def __unicode__(self):
         return self.text
 
+    def author(self):
+        if self.user.first_name:
+            return self.user.first_name
+        else:
+            return self.user.username
+
+    def title(self):
+        return self.text[:20]
+
 class Word(models.Model):
     user = models.ForeignKey(User)
     url = models.CharField(max_length=128, blank=True, null=True)
