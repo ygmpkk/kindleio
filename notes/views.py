@@ -23,7 +23,14 @@ ASCII_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 
 @login_required
 def index(request):
-    notes = Note.objects.filter(user=request.user)
+    book = request.GET.get("book")
+    if book:
+        notes = Note.objects.filter(user=request.user, book=book)
+        if not notes:
+            return HttpResponseRedirect(reverse("notes_index"))
+
+    else:
+        notes = Note.objects.filter(user=request.user)
     return render_to_response("notes.html",
         {'notes': notes},
         context_instance=RequestContext(request))
