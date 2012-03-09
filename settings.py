@@ -116,6 +116,7 @@ INSTALLED_APPS = (
     "kindleio.accounts",
     "kindleio.hackernews",
     "kindleio.notes",
+    "kindleio.zongheng",
 )
 
 # A sample logging configuration. The only tangible logging

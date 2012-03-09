@@ -7,9 +7,10 @@ from django.views.decorators.csrf import csrf_exempt
 
 from kindleio.accounts.decorators import login_required
 from kindleio.hackernews.models import HackerNews, SendRecord, EMAIL_COUNT_LIMIT
-from kindleio.hackernews.utils import HackerNewsArticle, send_file_to_kindles
+from kindleio.hackernews.utils import HackerNewsArticle
 from kindleio.hackernews.utils import get_limit_points, set_user_points, set_hn_disabled
 from kindleio.models import logger
+from kindleio.utils import send_files_to
 from kindleio.utils.decorators import admin_required
 
 
@@ -53,11 +54,11 @@ def check_for_sending(request):
 
         receivers = [x.email for x in sr_list]
         try:
-            send_file_to_kindles(news.file_path, receivers)
+            send_files_to([news.file_path], receivers)
             count_file += 1
             count_email += len(receivers)
         except Exception, e:
-            info = "send_mail() failed. Exception: %s File: %s" % (e, news.file_path)
+            info = "send mail failed. Exception: %s File: %s" % (e, news.file_path)
             logger.error(info)
         else:
             sr_list.update(sent=True)

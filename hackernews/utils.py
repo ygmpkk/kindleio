@@ -1,7 +1,6 @@
 from kindleio.hackernews.models import UserConfig, POINTS_LIMITS
 from kindleio.models import logger
 from kindleio.utils import get_soup_by_url
-from kindleio.utils.mail import send_mail
 
 
 def get_limit_points(points):
@@ -40,9 +39,6 @@ def set_user_points(user, points):
         return True
     return False
 
-def send_file_to_kindles(doc, receive_list):
-    subject = "Docs of HackerNews from Kindle.io"
-    send_mail(receive_list, subject, subject, files=[doc])
 
 def is_hn_disabled(user):
     if UserConfig.objects.filter(user=user).exists():

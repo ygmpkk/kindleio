@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block style %}
+<style>
+input.pages {width:34px;}
+input.send {font-weight:bold; margin-left:10px;}
+select {width:140px;}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="row">
+    <div class="span6 offset3 home">
+        <h1 class="logo">Zongheng Novels</h1>
+
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}
+            <a class="close" data-dismiss="alert">×</a>
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        {% if chapter_list %}
+        <form method="post" action=".">
+            <input type="hidden" name="book_id" value="{{ book_id }}">
+            <input type="hidden" name="cpage" value="{{ cpage }}">
+
+            <select name="from">
+            {% for k, v in chapter_list %}
+                <option value="{{ k }}">{{ v }}</option>
+            {% endfor %}
+            </select>
+
+            - <select name="to">
+            {% for k, v in chapter_list %}
+                <option value="{{ k }}">{{ v }}</option>
+            {% endfor %}
+            </select>
+
+            <input type="submit" value="Send to Kindle" class="send">
+        </form>
+        {% endif %}
+
+        {% for page in pages %}
+        <form method="post" action="." style="display:inline;">
+            <input type="hidden" name="cpage" value="{{ page }}">
+            <input type="hidden" name="book_id" value="{{ book_id }}">
+            <input type="submit" value="{{ page }}" class="pages" {% if page == cpage %} style="color:red;"{% endif %}>
+        </form>
+        {% endfor %}
+
+        {% if not book_id %}
+        <form method="post" action=".">
+            Top Books:<select name="book_id">
+            {% for book_id, name in top_books %}
+                <option value="{{ book_id }}">{{ name }}</option>
+            {% endfor %}
+            </select>
+            <input type="submit" value="Submit">
+        </form>
+
+        <form method="post" action=".">
+            New Books:<select name="book_id">
+            {% for book_id, name in new_books %}
+                <option value="{{ book_id }}">{{ name }}</option>
+            {% endfor %}
+            </select>
+            <input type="submit" value="Submit">
+        </form>
+
+        <form method="post" action=".">
+            Book Id: <input type="text" name="book_id"> <input type="submit" value="Submit">
+        </form>
+        {% endif %}
+
+    <div>
+</div>
+
+
+{% endblock %}
+

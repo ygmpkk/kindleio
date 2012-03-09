@@ -35,6 +35,7 @@ def signup(request):
             url = reverse("accounts_profile")
             user = authenticate(username=username, password=password)
             login(request, user)
+            return HttpResponseRedirect(reverse("accounts_profile"))
     return HttpResponseRedirect(url)
 
 

@@ -8,16 +8,13 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from kindleio.accounts.decorators import login_required
+from kindleio.utils.decorators import kindle_email_required
 from kindleio.utils.briticle import Briticle
-from kindleio.utils.mail import send_mail
+from kindleio.utils import send_to_kindle
 
 @login_required
+@kindle_email_required
 def home(request):
-    kindle_email = request.user.get_profile().kindle_email
-    if not kindle_email:
-        messages.error(request, "Please set up you Send To Kindle Email.")
-        return HttpResponseRedirect(reverse("accounts_profile"))
-
     if request.method == "POST":
         url = request.POST.get("url")
         if not url.startswith('http'):
@@ -38,7 +35,7 @@ def home(request):
         doc = br.save_to_file(settings.KINDLE_LIVE_DIR)
         if doc:
             if not settings.DEBUG:
-                send_mail([kindle_email], "New documentation here", "Sent from kindle.io", files=[doc,])
+                send_to_kindle(request, [doc])
                 os.remove(doc)
             messages.success(request, "The doc has been sent to your kindle successfully!")
             return HttpResponseRedirect("/")
