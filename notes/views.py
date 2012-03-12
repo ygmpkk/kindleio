@@ -1,6 +1,7 @@
 import datetime
 import re
 import rfc822
+import urllib2
 
 from django.conf import settings
 from django.contrib import messages
@@ -13,6 +14,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from kindleio.accounts.decorators import login_required
 from kindleio.accounts.models import UserProfile
+from kindleio.models import logger
 from kindleio.utils import get_soup_by_url
 from kindleio.utils.decorators import admin_required
 from kindleio.notes.models import Note, Word
@@ -60,7 +62,11 @@ def config(request):
 @admin_required
 def check(request):
     api = get_twitter_private_api()
-    messages = api.GetHomeTimeline()
+    try:
+        messages = api.GetHomeTimeline()
+    except urllib2.HTTPError, e:
+        logger.error("HTTPError: %s" % e)
+        return HttpResponse("Error.")
 
     info = []
     for msg in messages:

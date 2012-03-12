@@ -59,16 +59,16 @@ class HackerNewsManager(models.Manager):
             if article['points'] >= POINTS_LIMIT_TO_SAVE and not news.filed:
                 logger.info("article points is high enough, and not filed, try to ...")
                 try:
-                    br = Briticle(news.url, sent_by="Kindle.io")
+                    br = Briticle(news.url)
                 except Exception, e:
                     if isinstance(e, URLError) or 'timed out' in str(e):
                         logger.info("URLError or Time out Exception: %s URL: %s" % (e, news.url))
                         continue
                     raise
-                logger.info("... Briticle object fetch ok. len: %s" % len(br.content))
+                logger.info("... Briticle object fetch ok. len: %s" % len(br.text))
 
                 try:
-                    mobi = br.save_to_file(settings.HACKER_NEWS_DIR, title=news.title)
+                    mobi = br.save_to_file(settings.HACKER_NEWS_DIR, title=news.title, sent_by="Kindle.io")
                     logger.info("... filed it ok!")
                 except Exception, e:
                     logger.info("Failed to save fiel: %s URL: %s" % (e, news.url))

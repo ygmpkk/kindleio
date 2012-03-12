@@ -24,15 +24,8 @@ def home(request):
             messages.error(request, "Need a valid URL.")
             return HttpResponseRedirect("/")
 
-        try:
-            br = Briticle(url, sent_by="Kindle.io")
-        except Exception, e:
-            if isinstance(e, URLError) or 'timed out' in str(e).lower():
-                messages.error(request, "Internal Time Out. Please try again later.")
-                return HttpResponseRedirect("/")
-            messages.error(request, "Unknown Error occurred. Did you input a valid URL?")
-            return HttpResponseRedirect("/")
-        doc = br.save_to_file(settings.KINDLE_LIVE_DIR)
+        br = Briticle(url)
+        doc = br.save_to_file(settings.KINDLE_LIVE_DIR, sent_by="Kindle.io")
         if doc:
             if not settings.DEBUG:
                 send_to_kindle(request, [doc])
