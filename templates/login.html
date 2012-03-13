@@ -78,7 +78,7 @@ form .clearfix { margin-bottom: 14px; }
             <form method="POST" action=".">{% csrf_token %}
                 <h2>Sign In</h2>
                 <div class="clearfix">
-                    <label for="username">Username</label>
+                    <label for="username">Username or your Kindle E-mail</label>
                     <div class="input"><input type="text" maxlength="30" name="username" id="id_username"></div>
                 </div>
                 <div class="clearfix">
@@ -112,6 +112,8 @@ form .clearfix { margin-bottom: 14px; }
             <div class="modal-body">
                 <label>Username</label>
                 <input type="text" name="username">
+                <label>Kindle E-mail</label>
+                <input type="text" name="email">
                 <label>Password</label>
                 <input type="password" name="password">
             </div>

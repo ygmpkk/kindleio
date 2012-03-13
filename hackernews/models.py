@@ -15,10 +15,12 @@ from kindleio.utils.briticle import Briticle
 from kindleio.hackernews import signals
 
 
+DISABLED = 7777777
 EMAIL_COUNT_LIMIT = 14
-POINTS_LIMITS = (100, 149, 200, 249, 300, 349, 400, 500)
+POINTS_LIMITS = (100, 149, 200, 249, 300, 349, 400, 500, DISABLED)
 POINTS_LIMIT_TO_SAVE = POINTS_LIMITS[0]
-POINTS_LIMIT_PAIRS = ((100, "100 (approximately 20 articles per day)"),
+POINTS_LIMIT_PAIRS = ((DISABLED, "Do Not Send to Me"),
+               (100, "100 (approximately 20 articles per day)"),
                (149, "149 (approximately 14 articles per day)"),
                (200, "200 (approximately 8 articles per day)"),
                (249, "249 (approximately 5 articles per day)"),
@@ -115,7 +117,6 @@ class SendRecord(models.Model):
 
 class UserConfig(models.Model):
     user = models.OneToOneField(User)
-    disabled = models.BooleanField(default=False)
     points = models.IntegerField(default=300)
 
     def __unicode__(self):

@@ -20,52 +20,53 @@ from kindleio.hackernews.models import POINTS_LIMIT_PAIRS
 
 
 def signup(request):
-    url = reverse("site_login")
     if request.method == "POST":
         username = request.POST.get("username")
         password = request.POST.get("password")
-        if not username or not password:
-            messages.error(request, "username and password cannot be blank")
+        email = request.POST.get("email")
+        if not username:
+            messages.error(request, "Username cannot be blank")
+        elif not password:
+            messages.error(request, "Password cannot be blank")
+        elif not email:
+            messages.error(request, "Kindle E-mail cannot be blank")
         elif username.startswith("twitter_") or username.startswith("douban_") or \
             User.objects.filter(username=username).exists():
             messages.error(request, "This username already exists.")
+        elif User.objects.filter(email=email).exists():
+            messages.error(request, "This Kindle E-mail already exists.")
         else:
-            user = User.objects.create_user(username, password=password)
+            user = User.objects.create_user(username, password=password, email=email)
             messages.success(request, "Account has been created successfully!")
-            url = reverse("accounts_profile")
             user = authenticate(username=username, password=password)
             login(request, user)
             return HttpResponseRedirect(reverse("accounts_profile"))
-    return HttpResponseRedirect(url)
+    return HttpResponseRedirect(reverse("site_login"))
 
 
 @login_required
 def profile(request):
-    user = request.user
-    if request.POST.has_key("first_name") and request.POST.has_key("kindle_email"):
+    if 'first_name' in request.POST and 'email' in request.POST:
+        user = request.user
         first_name = request.POST.get("first_name")
         if user.first_name != first_name:
+            messages.success(request, "Your first_name was updated successfully")
             user.first_name = first_name
             user.save()
 
-        kindle_email = request.POST.get("kindle_email", "").strip()
-        profile = request.user.get_profile()
-        if profile.kindle_email == kindle_email:
-            pass
-        else:
-            if not kindle_email:
-                messages.error(request, "Please set up you Send to Kindle Email.")
-            elif (not kindle_email.endswith("@free.kindle.com")) and (not kindle_email.endswith("@kindle.com")):
-                messages.error(request, "Invalid email, must end with @kindle.com or @free.kindle.com")
-            elif not kindle_email.split("@")[0]:
-                messages.error(request, "Invalid email")
-            elif UserProfile.objects.filter(kindle_email__startswith=kindle_email.split("@")[0] + '@'):
-                messages.error(request, "This kindle email has already used by others.")
-            else:
-                profile = request.user.get_profile()
-                profile.kindle_email = kindle_email
-                profile.save()
-                messages.success(request, "Your profile was updated successfully")
+        email = request.POST.get("email", "").strip()
+        if not email:
+            messages.error(request, "Kindle E-mail cannot be blank")
+        elif (not email.endswith("@free.kindle.com")) and (not email.endswith("@kindle.com")):
+            messages.error(request, "Invalid email, must end with @kindle.com or @free.kindle.com")
+        elif not email.split("@")[0]:
+            messages.error(request, "Invalid email")
+        elif User.objects.filter(email__startswith=email.split("@")[0] + '@'):
+            messages.error(request, "This kindle email has already used by others.")
+        elif user.email != email:
+            user.email = email
+            user.save()
+            messages.success(request, "Your Kindle E-mail was updated successfully")
         return HttpResponseRedirect(reverse("accounts_profile"))
     return render_to_response("profile.html",
                               { "points_list": POINTS_LIMIT_PAIRS, },
@@ -73,24 +74,27 @@ def profile(request):
 
 
 def site_login(request):
+    # Redirect to Home if already logged in.
     if not isinstance(request.user, AnonymousUser):
         return HttpResponseRedirect("/")
 
     if request.method == "POST":
         username = request.POST['username']
         password = request.POST['password']
+        if username.endswith('@kindle.com') or username.endswith('@free.kindle.com'):
+            result = User.objects.filter(email=username)
+            if result and len(result) == 1:
+                username = result[0].username
         user = authenticate(username=username, password=password)
         if user is not None:
             login(request, user)
             next_url = request.session.get("next_url", "")
+            if next_url:
+                del request.session['next_url']
             return HttpResponseRedirect(next_url or "/")
         else:
             messages.error(request, "Invalid username or password, please try again.")
-            site_login = reverse("site_login")
-            next_url = request.session.get("next_url", "")
-            if next_url:
-                site_login += "?next=%s" % next_url
-            return HttpResponseRedirect(site_login)
+            return HttpResponseRedirect(reverse("site_login"))
     else:
         next_url = request.GET.get("next", "")
         if next_url:

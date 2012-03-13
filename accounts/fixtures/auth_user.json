@@ -1,23 +1,5 @@
 [
     {
-        "pk": 17, 
-        "model": "auth.user", 
-        "fields": {
-            "username": "douban_48376518", 
-            "first_name": "mitnk", 
-            "last_name": "", 
-            "is_active": true, 
-            "is_superuser": false, 
-            "is_staff": false, 
-            "last_login": "2012-03-07T10:40:13.947Z", 
-            "groups": [], 
-            "user_permissions": [], 
-            "password": "!", 
-            "email": "", 
-            "date_joined": "2012-03-06T10:12:18.739Z"
-        }
-    }, 
-    {
         "pk": 12, 
         "model": "auth.user", 
         "fields": {
@@ -31,26 +13,8 @@
             "groups": [], 
             "user_permissions": [], 
             "password": "pbkdf2_sha256$10000$YoU3cCfJcAev$uhDuyWA+k2NIMvTpgkGV68UnV+RxUKN9S2dLJxf/7bk=", 
-            "email": "", 
+            "email": "111@kindle.com", 
             "date_joined": "2012-03-05T09:39:27.027Z"
-        }
-    }, 
-    {
-        "pk": 1, 
-        "model": "auth.user", 
-        "fields": {
-            "username": "admin", 
-            "first_name": "admin", 
-            "last_name": "", 
-            "is_active": true, 
-            "is_superuser": true, 
-            "is_staff": true, 
-            "last_login": "2012-03-08T06:08:00.102Z", 
-            "groups": [], 
-            "user_permissions": [], 
-            "password": "pbkdf2_sha256$10000$lJQKMsR2oaOl$JsFA8aap9a8O/nuk226/qh1dOkJGI7WPqLm69cOV0qo=", 
-            "email": "whgking@gmail.com", 
-            "date_joined": "2012-02-27T07:42:34.867Z"
         }
     }
 ]

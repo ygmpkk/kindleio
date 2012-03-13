@@ -14,7 +14,7 @@ def admin_required(view_func):
 
 def kindle_email_required(view_func):
     def wrapper(request, *args, **kwargs):
-        if not request.user.get_profile().kindle_email:
+        if not request.user.email:
             messages.error(request, "Please set up you Send To Kindle Email.")
             return HttpResponseRedirect(reverse("accounts_profile"))
         return view_func(request, *args, **kwargs)

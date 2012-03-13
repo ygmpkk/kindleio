@@ -40,8 +40,8 @@ body {background: url("/media/img/bg.png");}
                     <p class="help-block">Will show up on the website. Not the sign in username.</p>
 
                     <p></p>
-                    <label for="kindle_email">Send to Kindle E-mail</label>
-                    <input type="text" id="kindle_email" name="kindle_email" class="span3" placeholder="@free.kindle.com" value="{% if request.user.get_profile.kindle_email %}{{ request.user.get_profile.kindle_email }}{% endif %}">
+                    <label for="email">Send to Kindle E-mail</label>
+                    <input type="text" id="email" name="email" class="span3" placeholder="@free.kindle.com" value="{% if request.user.email %}{{ request.user.email }}{% endif %}">
                     <p class="help-block">Make sure to add <span>info@kindle.io</span> into your "Approved Personal Document E-mail List" via <a href="http://www.amazon.com/myk">Manage Your Kindle page</a>. So that your kindle can receive documents sent from kindle.io</p>
                     <div class="form-actions">
                         <input type="submit" class="btn btn-primary" value="Save changes">
@@ -51,15 +51,10 @@ body {background: url("/media/img/bg.png");}
             </div>
 
             <div class="tab-pane" id="hackernews">
+                <p>Kindle.io can send aritcles from <a href="http://news.ycombinator.com/">Hacker News</a>.</p>
                 <form method="post" action="{% url hackernews_config %}" class="form-horizontal">{% csrf_token %}
-                    <label for="receive_hn" class="checkbox">
-                        <input type="checkbox" id="receive_hn" name="receive_hn" {% if not request.user.get_profile.hn_disabled %}checked="checked"{% endif %}>
-                        Receive Hacker News
-                    </label>
-                    <p class="help-block">Check this on to receive articles from <a href="http://news.ycombinator.com/">Hacker News</a> list.</p>
-
                     <label for="points_limit">Points Limit</label>
-                    <select id="points_limit"{% if request.user.get_profile.hn_disabled %} disabled="disabled"{% endif %} name="points_limit" class="span4">
+                    <select id="points_limit" name="points_limit" class="span4">
                         {% for points, title in points_list %}
                         <option value="{{ points }}"{% ifequal request.user.get_profile.hn_points points %} selected="selected"{% endifequal %}>{{ title }}</option>
                         {% endfor %}
@@ -98,20 +93,4 @@ body {background: url("/media/img/bg.png");}
         </div>
     </div>
 </div>
-{% endblock %}
-
-{% block scripts_bottom %}
-<script type="text/javascript">
-$(function() {
-    $("#receive_hn").click(function() {
-        var is_checked = $("#receive_hn").attr("checked");
-        if (is_checked) {
-            $("#points_limit").removeAttr('disabled');
-        }
-        else {
-            $("#points_limit").attr('disabled', 'disabled');
-        }
-    });
-});
-</script>
 {% endblock %}

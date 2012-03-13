@@ -8,7 +8,7 @@ from django.views.decorators.csrf import csrf_exempt
 from kindleio.accounts.decorators import login_required
 from kindleio.hackernews.models import HackerNews, SendRecord, EMAIL_COUNT_LIMIT
 from kindleio.hackernews.utils import HackerNewsArticle
-from kindleio.hackernews.utils import get_limit_points, set_user_points, set_hn_disabled
+from kindleio.hackernews.utils import get_limit_points, set_user_points
 from kindleio.models import logger
 from kindleio.utils import send_files_to
 from kindleio.utils.decorators import admin_required
@@ -17,14 +17,10 @@ from kindleio.utils.decorators import admin_required
 @login_required
 def config(request):
     if request.method == "POST":
-        user = request.user
-        receive_hn = request.POST.get("receive_hn", None)
-        set_hn_disabled(user, (not receive_hn))
-        if receive_hn:
-            points = request.POST.get("points_limit", 500)
-            points = get_limit_points(points)
-            if points:
-                set_user_points(user, points)
+        points = request.POST.get("points_limit", 500)
+        points = get_limit_points(points)
+        if points:
+            set_user_points(request.user, points)
         messages.success(request, "Your HackerNews profile was updated successfully")
     return HttpResponseRedirect(reverse("accounts_profile"))
 

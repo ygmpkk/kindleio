@@ -15,15 +15,16 @@ def get_limit_points(points):
     return POINTS_LIMITS[-1]
 
 def get_email_list(points, points_from=None):
+    from kindleio.accounts.models import UserProfile
     if points_from:
-        ucs = UserConfig.objects.filter(disabled=False, points__lte=points, points__gt=points_from)
+        ucs = UserConfig.objects.filter(points__lte=points, points__gt=points_from)
     else:
-        ucs = UserConfig.objects.filter(disabled=False, points__lte=points)
+        ucs = UserConfig.objects.filter(points__lte=points)
     email_list = []
     for uc in ucs:
-        kindle_email = uc.user.get_profile().kindle_email
-        if kindle_email:
-            email_list.append(kindle_email)
+        if not uc.user.email:
+            continue
+        email_list.append(uc.user.email)
     return email_list
 
 def get_user_points(user):
@@ -39,19 +40,6 @@ def set_user_points(user, points):
         return True
     return False
 
-
-def is_hn_disabled(user):
-    if UserConfig.objects.filter(user=user).exists():
-        return UserConfig.objects.get(user=user).disabled
-    return False
-
-def set_hn_disabled(user, disabled):
-    if UserConfig.objects.filter(user=user).exists():
-        uc = UserConfig.objects.get(user=user)
-        uc.disabled = disabled
-        uc.save()
-        return True
-    return False
 
 class HackerNewsArticle(object):
     POINTS_MIN_LIMIT = 70

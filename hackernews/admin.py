@@ -8,10 +8,10 @@ class HackerNewsAdmin(admin.ModelAdmin):
     list_filter = ('added', 'filed')
 
 class UserConfigAdmin(admin.ModelAdmin):
-    list_display = ("user", "points", "disabled")
+    list_display = ("user", "points")
 
 class SendRecordAdmin(admin.ModelAdmin):
-    list_display = ("news", "email", "sent")
+    list_display = ("news", "email", "sent", "added")
 
 admin.site.register(HackerNews, HackerNewsAdmin)
 admin.site.register(UserConfig, UserConfigAdmin)

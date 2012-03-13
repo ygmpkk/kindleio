@@ -20,10 +20,10 @@ def send_files_to(files, send_to):
 
 
 def send_to_kindle(request, files):
-    kindle_email = request.user.get_profile().kindle_email
-    if not kindle_email:
+    email = request.user.email
+    if not email:
         return
-    send_to = [kindle_email]
+    send_to = [email]
     info = "Docs from Kindle.io"
     stmp = GSMTP(settings.KINDLEIO_EMAIL, settings.KINDLEIO_EMAIL_PASSWD)
     stmp.send_mail(send_to, info, info, files=files)
