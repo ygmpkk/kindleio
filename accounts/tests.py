@@ -30,6 +30,10 @@ class ViewsTest(TestCase):
                          {"username":"222", "password":"222"})
         self.assertEqual(urlparse(response['Location']).path, url_failed)
 
+        # invalid email
+        response = self.client.post(url,
+                         {"username":"222", "password":"222", "email":"invalid_email"})
+        self.assertEqual(urlparse(response['Location']).path, url_failed)
 
         # username already exists
         response = self.client.post(url,

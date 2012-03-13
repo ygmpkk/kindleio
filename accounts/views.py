@@ -30,6 +30,8 @@ def signup(request):
             messages.error(request, "Password cannot be blank")
         elif not email:
             messages.error(request, "Kindle E-mail cannot be blank")
+        elif not email.endswith('@kindle.com') and not email.endswith('@free.kindle.com'):
+            messages.error(request, "Kindle E-mail must ends with @kindle.com or @free.kindle.com")
         elif username.startswith("twitter_") or username.startswith("douban_") or \
             User.objects.filter(username=username).exists():
             messages.error(request, "This username already exists.")

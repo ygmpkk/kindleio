@@ -51,7 +51,7 @@ body {background: url("/media/img/bg.png");}
             </div>
 
             <div class="tab-pane" id="hackernews">
-                <p>Kindle.io can send aritcles from <a href="http://news.ycombinator.com/">Hacker News</a>.</p>
+                <p>Kindle.io can send <a href="http://news.ycombinator.com/">Hacker News</a> articles to your kindle.</p>
                 <form method="post" action="{% url hackernews_config %}" class="form-horizontal">{% csrf_token %}
                     <label for="points_limit">Points Limit</label>
                     <select id="points_limit" name="points_limit" class="span4">
