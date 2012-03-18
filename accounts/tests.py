@@ -45,9 +45,19 @@ class ViewsTest(TestCase):
                          {"username":"222", "password":"222", "email":"111@kindle.com"})
         self.assertEqual(urlparse(response['Location']).path, url_failed)
 
+        # email already exists
+        response = self.client.post(url,
+                         {"username":"twitter_222", "password":"222", "email":"222@kindle.com"})
+        self.assertEqual(urlparse(response['Location']).path, url_failed)
+
+        # email already exists
+        response = self.client.post(url,
+                         {"username":"douban_222", "password":"222", "email":"222@kindle.com"})
+        self.assertEqual(urlparse(response['Location']).path, url_failed)
+
         # created ok, redirect to accounts_profile page
         response = self.client.post(url,
-                         {"username":"222", "password":"222", "email":"xxx@kindle.com"})
+                         {"username":"222", "password":"222", "email":"222@kindle.com"})
         self.assertEqual(urlparse(response['Location']).path, url_success)
 
     def test_profile(self):

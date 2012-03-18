@@ -64,7 +64,7 @@ def check(request):
     api = get_twitter_private_api()
     try:
         messages = api.GetHomeTimeline()
-    except urllib2.HTTPError, e:
+    except (urllib2.URLError, urllib2.HTTPError), e:
         logger.error("HTTPError: %s" % e)
         return HttpResponse("Error.")
 

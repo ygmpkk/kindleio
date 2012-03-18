@@ -2,6 +2,8 @@
 <html>
 <head>
     <title>{% block title %}Kindle.io{% endblock %}</title>
+    <meta name="keywords" content="Hacker News, Send to Kindle, Save Highlights" />
+    <meta name="description" content="Kindle IO Service, Send Hacker News Articles to your kindle. As well as Save Kindle Highlights for you." />
     <link rel="stylesheet" href="/media/css/bootstrap.css" type="text/css" />
     <link rel="stylesheet" href="/media/css/bootstrap-responsive.css" type="text/css" />
     <link rel="stylesheet" href="/media/css/main.css" type="text/css" />
@@ -18,7 +20,7 @@
 
 <hr>
 <footer class="footer">
-    <p>&copy; 2012 kindle.io <a href="/about/">About</a> {% if request.user.is_authenticated %}<a href="/">Home</a> <a href="/notes/">Notes</a> <a href="/zongheng/">Novels</a> <a href="/accounts/profile/">Profile</a> <a href="/logout/">Sign Out</a>{% else %} <a href="/login/">Sign In</a>{% endif %}</p>
+    <p>&copy; 2012 kindle.io <a href="/about/">About</a> {% if request.user.is_authenticated %}<a href="/">Home</a> <a href="/notes/">Notes</a> <a href="/accounts/profile/">Profile</a> <a href="/logout/">Sign Out</a>{% else %} <a href="/login/">Sign In</a>{% endif %}</p>
 </footer>
 
 </div>
