@@ -10,6 +10,8 @@ from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 
+from kindleio.hackernews.models import HackerNews, SendRecord
+
 
 class ViewsTest(TestCase):
     fixtures = ['auth_user.json']
@@ -27,7 +29,7 @@ class ViewsTest(TestCase):
                          {"receive_hn":"on", "points_limit":"500"})
         self.assertEqual(urlparse(response['Location']).path, reverse("accounts_profile"))
 
-    def test_check(self):
+    def test_fetch(self):
         url_name = "hackernews_fetch"
         response = self.client.get(reverse(url_name))
         self.assertEqual(response.status_code, 403) # Require admin code
@@ -44,4 +46,5 @@ class ViewsTest(TestCase):
         response = self.client.post(reverse(url_name), 
                                     {"key": settings.API_SECRET_KEY, "a":"a"})
         self.assertEqual(response.status_code, 200)
+
 
