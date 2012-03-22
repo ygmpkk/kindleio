@@ -63,7 +63,7 @@ def profile(request):
             messages.error(request, "Invalid email, must end with @kindle.com or @free.kindle.com")
         elif not email.split("@")[0]:
             messages.error(request, "Invalid email")
-        elif User.objects.filter(email__startswith=email.split("@")[0] + '@'):
+        elif User.objects.filter(username__ne=username,email__startswith=email.split("@")[0] + '@'):
             messages.error(request, "This kindle email has already used by others.")
         elif user.email != email:
             user.email = email
