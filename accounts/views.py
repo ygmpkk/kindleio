@@ -1,4 +1,5 @@
 from cgi import parse_qs
+import os
 import uuid
 
 from kindleio.accounts import pydouban, oauth
@@ -280,6 +281,7 @@ def password_reset(request):
             f = generate_file(text)
             if not settings.DEBUG:
                 send_files_to([f], [email])
+                os.remove(f)
             messages.success(request, 
                              "Password Reset URL has been sent to your Kindle. "
                              "Please check it in a few minutes.")
