@@ -158,3 +158,9 @@ class ViewsTest(TestCase):
         response = self.client.post(url, {'email': '222@free.kindle.com'})
         u = User.objects.get(username='111')
         self.assertEqual(u.email, '222@free.kindle.com')
+
+        User.objects.create_user(username='foo', email='foo@kindle.com')
+        response = self.client.post(url, {'email': 'foo@free.kindle.com'})
+        u = User.objects.get(username='111')
+        self.assertEqual(u.email, '222@free.kindle.com')
+

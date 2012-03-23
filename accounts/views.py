@@ -34,7 +34,7 @@ def signup(request):
             messages.error(request, "Kindle E-mail cannot be blank")
         elif not email.endswith('@kindle.com') and \
             not email.endswith('@free.kindle.com'):
-            messages.error(request, 
+            messages.error(request,
                            "Kindle E-mail must ends with @kindle.com "
                            "or @free.kindle.com")
         elif username.startswith("twitter_") or \
@@ -44,7 +44,7 @@ def signup(request):
         elif User.objects.filter(email=email).exists():
             messages.error(request, "This Kindle E-mail already exists.")
         else:
-            user = User.objects.create_user(username, 
+            user = User.objects.create_user(username,
                                             password=password, email=email)
             messages.success(request, "Account has been created successfully!")
             user = authenticate(username=username, password=password)
@@ -55,39 +55,39 @@ def signup(request):
 
 @login_required
 def profile(request):
-    if 'first_name' in request.POST and 'email' in request.POST:
+    if request.method == "POST":
         user = request.user
         first_name = request.POST.get("first_name")
-        if user.first_name != first_name:
-            messages.success(request, 
-                             "Your first_name was updated successfully")
+        if first_name and user.first_name != first_name:
+            messages.success(request, "Your profile was updated successfully")
             user.first_name = first_name
             user.save()
 
         email = request.POST.get("email", "").strip()
-
-        if not email:
-            messages.error(request, "Kindle E-mail cannot be blank")
-        elif (not email.endswith("@free.kindle.com")) and \
-            (not email.endswith("@kindle.com")):
-            messages.error(request, 
+        if (not email.endswith("@free.kindle.com")) and \
+            not email.endswith("@kindle.com"):
+            messages.error(request,
                            "Invalid email, must end with @kindle.com "
                            "or @free.kindle.com")
         elif not email.split("@")[0]:
             messages.error(request, "Invalid email")
-        elif user.email == email:
-            pass
-        elif User.objects.filter(email__startswith=email.split("@")[0] + '@'):
-            messages.error(request, "This kindle email has already used by others.")
         else:
-            user.email = email
-            user.save()
-            messages.success(request, 
-                             "Your Kindle E-mail was updated successfully")
+            prefix = email.split('@')[0] + '@'
+            users = User.objects.filter(email__startswith=prefix)
+            if len(users) >= 1 and users[0] != user:
+                messages.error(request,
+                               "This kindle email has already used by others.")
+            else:
+                # User can change email from @kindle.com to @free.kindle.com
+                user.email = email
+                user.save()
+                messages.success(request,
+                                 "Your Kindle E-mail was updated successfully")
         return HttpResponseRedirect(reverse("accounts_profile"))
-    return render_to_response("profile.html",
-                              { "points_list": POINTS_LIMIT_PAIRS, },
-                              context_instance=RequestContext(request))
+    else:
+        return render_to_response("profile.html",
+                                  { "points_list": POINTS_LIMIT_PAIRS, },
+                                  context_instance=RequestContext(request))
 
 
 def site_login(request):
@@ -114,7 +114,7 @@ def site_login(request):
                 del request.session['next_url']
             return HttpResponseRedirect(next_url or "/")
         else:
-            messages.error(request, 
+            messages.error(request,
                            "Invalid username or password, please try again.")
             return HttpResponseRedirect(reverse("site_login"))
     else:
@@ -131,7 +131,7 @@ def site_logout(request):
 
 
 def login_with_douban(request):
-    auth = pydouban.Auth(key=settings.DOUBAN_API_KEY, 
+    auth = pydouban.Auth(key=settings.DOUBAN_API_KEY,
                          secret=settings.DOUBAN_SECRET)
     callback_url = "http://%s%s" % \
                    (request.META["HTTP_HOST"], reverse("douban_callback"))
@@ -157,7 +157,7 @@ def douban_callback(request):
     # Create a user if not exist
     douban_id = request.session['douban_user_id']
     create_or_update_user(douban_id, "douban")
-        
+
     if "douban_request_secret" in request.session:
         del request.session["douban_request_secret"]
     next_url = request.session.get("next_url", "")
@@ -174,21 +174,21 @@ def get_douban_api(request):
     api = pydouban.Api()
     token = request.session["douban_oauth_token"]
     token_secret = request.session["douban_oauth_token_secret"]
-    api.set_oauth(key=settings.DOUBAN_API_KEY, 
+    api.set_oauth(key=settings.DOUBAN_API_KEY,
                   secret=settings.DOUBAN_SECRET,
-                  acs_token=token, 
+                  acs_token=token,
                   acs_token_secret=token_secret)
     return api
 
 
 def login_with_twitter(request):
-    api = OAuthApi(settings.TWITTER_CONSUMER_KEY, 
+    api = OAuthApi(settings.TWITTER_CONSUMER_KEY,
                    settings.TWITTER_CONSUMER_SECRET)
     request_token = api.getRequestToken()
     request.session["twitter_request_token"] = request_token.to_string()
     authorization_url = api.getAuthorizationURL(request_token)
     return HttpResponseRedirect(authorization_url)
-    
+
 
 def twitter_callback(request):
     token_string = request.session.get('twitter_request_token')
@@ -200,7 +200,7 @@ def twitter_callback(request):
                    settings.TWITTER_CONSUMER_SECRET,
                    req_token.key,
                    req_token.secret)
-    access_token = api.getAccessToken() 
+    access_token = api.getAccessToken()
     request.session["access_token"] = access_token.to_string()
     if 'twitter_request_token' in request.session:
         del request.session["twitter_request_token"]
@@ -219,10 +219,10 @@ def twitter_callback(request):
 def get_twitter_api(request):
     api = None
     access_token = request.session.get('access_token')
-    if access_token: 
+    if access_token:
         access_token = oauth.Token.from_string(access_token)
         api = OAuthApi(settings.TWITTER_CONSUMER_KEY,
-                       settings.TWITTER_CONSUMER_SECRET, 
+                       settings.TWITTER_CONSUMER_SECRET,
                        access_token.key, access_token.secret, verified=True)
     return api
 
@@ -259,7 +259,7 @@ def password_reset(request):
             user.set_password(new_password)
             user.save()
             UUID.objects.get(uuid=uuid_string).delete()
-            messages.success(request, 
+            messages.success(request,
                              "The password has been reset successfully.")
             url = reverse('site_login')
             return HttpResponseRedirect(url)
@@ -291,7 +291,7 @@ def password_reset(request):
             if not settings.DEBUG:
                 send_files_to([f], [email])
                 os.remove(f)
-            messages.success(request, 
+            messages.success(request,
                              "Password Reset URL has been sent to your Kindle."
                              " Please check it in a few minutes.")
     return HttpResponseRedirect(url)
