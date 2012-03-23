@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from django.utils.timezone import now
 
 from kindleio.accounts.models import UserProfile, UUID
+from kindleio.notes.utils import get_twitter_private_api
 
 
 def get_user_from_uuid(uuid):
@@ -40,6 +41,9 @@ def create_or_update_user(user_id, attr):
     if getattr(profile, attr_name) != user_id:
         setattr(profile, attr_name, user_id)
         profile.save()
+        if attr == 'twitter' and not settings.DEBUG:
+            api = get_twitter_private_api()
+            api.CreateFriendship(user_id)
     user_logged_in.send(sender=user.__class__, user=user)
     return user
 
