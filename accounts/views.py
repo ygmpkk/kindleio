@@ -65,6 +65,7 @@ def profile(request):
             user.save()
 
         email = request.POST.get("email", "").strip()
+
         if not email:
             messages.error(request, "Kindle E-mail cannot be blank")
         elif (not email.endswith("@free.kindle.com")) and \
@@ -74,10 +75,11 @@ def profile(request):
                            "or @free.kindle.com")
         elif not email.split("@")[0]:
             messages.error(request, "Invalid email")
+        elif user.email == email:
+            pass
         elif User.objects.filter(email__startswith=email.split("@")[0] + '@'):
-            messages.error(request, 
-                           "This kindle email has already used by others.")
-        elif user.email != email:
+            messages.error(request, "This kindle email has already used by others.")
+        else:
             user.email = email
             user.save()
             messages.success(request, 
