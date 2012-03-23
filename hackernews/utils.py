@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from kindleio.hackernews.models import UserConfig, POINTS_LIMITS
 from kindleio.models import logger
 from kindleio.utils import get_soup_by_url

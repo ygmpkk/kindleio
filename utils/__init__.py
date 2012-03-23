@@ -1,3 +1,4 @@
+import os
 import urllib2
 from bs4 import BeautifulSoup
 from django.conf import settings
@@ -13,10 +14,23 @@ def get_soup_by_url(url, timeout=10):
     return soup
 
 
-def send_files_to(files, send_to):
+def generate_file(text, title="", file_name=""):
+    if not title:
+        title = "Message from Kindle.io"
+    if not file_name:
+        file_name = title.replace(' ', '_')
+    if not file_name.endswith('.txt'):
+        file_name += '.txt'
+    path = os.path.join(settings.KINDLE_LIVE_DIR, file_name)
+    with open(path, 'w') as f:
+        f.write(text.encode('utf-8'))
+    return path
+
+
+def send_files_to(files, receivers):
     info = "Docs from Kindle.io"
     stmp = GSMTP(settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)
-    stmp.send_mail(send_to, info, info, files=files)
+    stmp.send_mail(receivers, info, info, files=files)
 
 
 def send_to_kindle(request, files):

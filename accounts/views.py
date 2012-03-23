@@ -1,4 +1,5 @@
 from cgi import parse_qs
+import uuid
 
 from kindleio.accounts import pydouban, oauth
 from kindleio.accounts.oauthtwitter import OAuthApi
@@ -7,14 +8,16 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.models import AnonymousUser, User
 from django.contrib.auth import authenticate, login, logout
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.core.urlresolvers import reverse
 
 from kindleio.accounts.decorators import login_required
-from kindleio.accounts.utils import create_or_update_user
+from kindleio.accounts.models import UUID
+from kindleio.accounts.utils import create_or_update_user, get_user_from_uuid
 from kindleio.hackernews.models import POINTS_LIMIT_PAIRS
+from kindleio.utils import generate_file, send_files_to
 
 
 def signup(request):
@@ -96,7 +99,7 @@ def site_login(request):
             (username.endswith('@kindle.com') or \
             username.endswith('@free.kindle.com')):
             prefix = username.split('@')[0]
-            result = User.objects.filter(email__startswith=prefix,
+            result = User.objects.filter(email__startswith=prefix + '@',
                 email__endswith='kindle.com')
             if result and len(result) == 1:
                 username = result[0].username
@@ -213,3 +216,71 @@ def get_twitter_api(request):
                        settings.TWITTER_CONSUMER_SECRET, 
                        access_token.key, access_token.secret, verified=True)
     return api
+
+
+def password_reset(request):
+    url = reverse('site_login')
+
+    uuid_string = request.GET.get('uuid')
+    if uuid_string:
+        ## Branch 1: Render password reset page
+        if not get_user_from_uuid(uuid_string):
+            return HttpResponse("Invalid URL")
+        return render_to_response("accounts/password_reset.html",
+                                  { "uuid": uuid_string, },
+                                  context_instance=RequestContext(request))
+
+    uuid_string = request.POST.get('uuid')
+    if uuid_string:
+        ## Branch 2: Reset Password if received an valid uuid
+        user = get_user_from_uuid(uuid_string)
+        if not user:
+            return HttpResponse("Invalid URL")
+
+        url = reverse("accounts_password_reset") + "?uuid=" + uuid_string
+        new_password = request.POST.get('password')
+        new_password2 = request.POST.get('password2')
+        if not new_password:
+            messages.error(request, "Password cannot be blank.")
+            return HttpResponseRedirect(url)
+        elif new_password2 != new_password:
+            messages.error(request, "The passwords typed do not match.")
+            return HttpResponseRedirect(url)
+        else:
+            user.set_password(new_password)
+            user.save()
+            UUID.objects.get(uuid=uuid_string).delete()
+            messages.success(request, "The password has been reset successfully.")
+            url = reverse('site_login')
+            return HttpResponseRedirect(url)
+
+    ## Branch else: Send reset URL to user's Kindle
+    if request.method == "POST":
+        email = request.POST.get('email')
+        if not email or (not email.endswith('@kindle.com') and \
+                         not email.endswith('@free.kindle.com')):
+            messages.error(request, "Email address required.")
+            return HttpResponseRedirect(url)
+        elif not User.objects.filter(email__startswith=email.split("@")[0] + '@'):
+            messages.error(request, "No user with this E-mail Address.")
+            return HttpResponseRedirect(url)
+
+        prefix = email.split('@')[0]
+        result = User.objects.filter(email__startswith=prefix + '@',
+            email__endswith='kindle.com')
+        if result and len(result) == 1:
+            user = result[0]
+            uuid_string = str(uuid.uuid4())
+            UUID.objects.create(user=user, uuid=uuid_string)
+            reset_url = "http://kindle.io" + reverse("accounts_password_reset") + \
+                        "?uuid=" + uuid_string
+            text = "Hello,\n\nPlease click the following URL to reset your password. " \
+                   "The URL will be invalid in 24 hours." \
+                   "\n\n%s\n\nKindle.io" % reset_url
+            f = generate_file(text)
+            if not settings.DEBUG:
+                send_files_to([f], [email])
+            messages.success(request, 
+                             "Password Reset URL has been sent to your Kindle. "
+                             "Please check it in a few minutes.")
+    return HttpResponseRedirect(url)

@@ -68,8 +68,9 @@ form .clearfix { margin-bottom: 14px; }
 
             {% if messages %}
             {% for message in messages %}
-            <div class="alert alert-{{ message.tags }}">{{ message }}
+            <div class="alert alert-{{ message.tags }}">
                 <a class="close" data-dismiss="alert">×</a>
+                {{ message }}
             </div>
             {% endfor %}
             {% endif %}
@@ -87,7 +88,7 @@ form .clearfix { margin-bottom: 14px; }
                 </div>
                 <div class="clearfix">
                     <input type="submit" class="btn" value="Sign In">
-                    <a style="float:left;" class="forgot-password" href="#">Forgot your password?</a>  
+                    <a style="float:left;" class="forgot-password" href="#password_reset" data-toggle="modal">Forgot your password?</a>  
                 </div>
             </form>
 
@@ -101,6 +102,24 @@ form .clearfix { margin-bottom: 14px; }
                     <a href="/accounts/login_with_twitter/"><img src="/media/img/sign-in-with-twitter-l.png"></a>
                 </div>
             </div>
+        </div>
+
+        <div class="modal hide fade" id="password_reset" style="display: none;">
+          <form method="post" action="{% url accounts_password_reset %}">{% csrf_token %}
+            <div class="modal-header">
+              <a data-dismiss="modal" class="close">×</a>
+              <h3>Forgot you password?</h3>
+            </div>
+            <div class="modal-body">
+                <label>Your Kindle E-mail</label>
+                <input type="text" name="email">
+                <p class="help-block">Your Kindle will receive a document with a Password Reset URL. You can then follow the URL to make you password reset.</p>
+            </div>
+            <div class="modal-footer">
+              <a data-dismiss="modal" class="btn" href="#">Close</a>
+              <input type="submit" class="btn btn-primary" value="Send Password Reset URL to Kindle">
+            </div>
+          </form>
         </div>
 
         <div class="modal hide fade" id="signup" style="display: none;">
@@ -123,6 +142,7 @@ form .clearfix { margin-bottom: 14px; }
             </div>
           </form>
         </div>
+
     </div>
 </div>
 

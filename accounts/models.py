@@ -2,10 +2,15 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 
-from kindleio.hackernews.utils import get_user_points
 
 DOUBAN_LOGIN_FLAG = "loged_with_douban"
 TWITTER_LOGIN_FLAG = "loged_with_twitter"
+
+
+class UUID(models.Model):
+    user = models.ForeignKey(User)
+    uuid = models.CharField(max_length=40)
+    added = models.DateTimeField(auto_now_add=True)
 
 
 class UserProfile(models.Model):
@@ -16,6 +21,7 @@ class UserProfile(models.Model):
     twitter_id = models.CharField(max_length=40, null=True, blank=True)
 
     def hn_points(self):
+        from kindleio.hackernews.utils import get_user_points
         return get_user_points(self.user)
 
     def email(self):
