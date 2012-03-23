@@ -94,6 +94,18 @@ class ViewsTest(TestCase):
         self.assertEqual(urlparse(response['Location']).path, url_success)
         self.client.logout()
 
+        # Also one can login with 'xxx@free.kindle.com' when he/she actually set up
+        # with 'xxx@kindle.com'. And vice versa.
+        response = self.client.post(url, {'username':'111@free.kindle.com', 'password':'111'})
+        self.assertEqual(urlparse(response['Location']).path, url_success)
+        self.client.logout()
+        ## the 'vice versa'
+        user = User.objects.get(username='111')
+        user.email = '111@free.kindle.com'
+        response = self.client.post(url, {'username':'111@kindle.com', 'password':'111'})
+        self.assertEqual(urlparse(response['Location']).path, url_success)
+        self.client.logout()
+
         # Login with username / password
         response = self.client.post(url, {'username':'111', 'password':'111'})
         self.assertEqual(urlparse(response['Location']).path, url_success)

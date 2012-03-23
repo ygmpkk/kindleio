@@ -1,6 +1,18 @@
+from datetime import timedelta
+
 from django.contrib.auth.signals import user_logged_in
 from django.contrib.auth.models import User
-from kindleio.accounts.models import UserProfile
+from django.utils.timezone import now
+
+from kindleio.accounts.models import UserProfile, UUID
+
+
+def get_user_from_uuid(uuid):
+    date_limit = now() - timedelta(days=1)
+    uuids = UUID.objects.filter(uuid=uuid, added__gte=date_limit)
+    if not uuids or len(uuids) != 1:
+        return None
+    return uuids[0].user
 
 
 def create_or_update_user(user_id, attr):
