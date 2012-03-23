@@ -41,9 +41,12 @@ def create_or_update_user(user_id, attr):
     if getattr(profile, attr_name) != user_id:
         setattr(profile, attr_name, user_id)
         profile.save()
-        if attr == 'twitter' and not settings.DEBUG:
-            api = get_twitter_private_api()
-            api.CreateFriendship(user_id)
+        if attr == 'twitter':
+            try:
+                api = get_twitter_private_api()
+                api.CreateFriendship(user_id)
+            except:
+                pass
     user_logged_in.send(sender=user.__class__, user=user)
     return user
 
