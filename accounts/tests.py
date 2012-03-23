@@ -32,38 +32,51 @@ class ViewsTest(TestCase):
 
         # invalid email
         response = self.client.post(url,
-                         {"username":"222", "password":"222", "email":"invalid_email"})
+                         {"username": "222",
+                          "password": "222",
+                          "email": "invalid_email"})
         self.assertEqual(urlparse(response['Location']).path, url_failed)
 
         # username already exists
         response = self.client.post(url,
-                         {"username":"111", "password":"111", "email":"xxx@kindle.com"})
+                         {"username": "111",
+                          "password": "111",
+                          "email": "xxx@kindle.com"})
         self.assertEqual(urlparse(response['Location']).path, url_failed)
 
         # email already exists
         response = self.client.post(url,
-                         {"username":"222", "password":"222", "email":"111@kindle.com"})
+                         {"username": "222",
+                          "password": "222",
+                          "email": "111@kindle.com"})
         self.assertEqual(urlparse(response['Location']).path, url_failed)
 
         # email already exists
         response = self.client.post(url,
-                         {"username":"twitter_222", "password":"222", "email":"222@kindle.com"})
+                         {"username": "twitter_222",
+                          "password": "222",
+                          "email": "222@kindle.com"})
         self.assertEqual(urlparse(response['Location']).path, url_failed)
 
         # email already exists
         response = self.client.post(url,
-                         {"username":"douban_222", "password":"222", "email":"222@kindle.com"})
+                         {"username": "douban_222",
+                          "password": "222",
+                          "email": "222@kindle.com"})
         self.assertEqual(urlparse(response['Location']).path, url_failed)
 
         # created ok, redirect to accounts_profile page
         response = self.client.post(url,
-                         {"username":"222", "password":"222", "email":"222@kindle.com"})
+                         {"username": "222",
+                          "password": "222",
+                          "email": "222@kindle.com"})
         self.assertEqual(urlparse(response['Location']).path, url_success)
 
     def test_profile(self):
         url = reverse("accounts_profile")
         self.client.login(username='111', password='111')
-        response = self.client.post(url, {"first_name":"tom", "email":"111@kindle.com"})
+        response = self.client.post(url, {"first_name":"tom",
+                                          "email":"111@kindle.com"})
         user = User.objects.get(username='111')
         self.assertEqual(user.first_name, 'tom')
         self.assertEqual(user.email, '111@kindle.com')
@@ -74,10 +87,11 @@ class ViewsTest(TestCase):
         self.assertEqual(user.email, '111@kindle.com')
 
         # Updated successfully
-        response = self.client.post(url, {"first_name":"tom", "email":"xxx@kindle.com"})
+        response = self.client.post(url, {"first_name":"tom",
+                                          "email":"xxx@kindle.com"})
         user = User.objects.get(username='111')
         self.assertEqual(user.email, 'xxx@kindle.com')
-        
+
 
     def test_site_login(self):
         url = reverse("site_login")
@@ -86,23 +100,31 @@ class ViewsTest(TestCase):
         self.assertEqual(response.status_code, 200)
 
         # Invalid username / password
-        response = self.client.post(url, {'username':'222', 'password':'222'})
+        response = self.client.post(url,
+                                    {'username': '222',
+                                     'password': '222'})
         self.assertEqual(urlparse(response['Location']).path, url)
 
         # Login with email / password
-        response = self.client.post(url, {'username':'111@kindle.com', 'password':'111'})
+        response = self.client.post(url,
+                                    {'username': '111@kindle.com',
+                                     'password': '111'})
         self.assertEqual(urlparse(response['Location']).path, url_success)
         self.client.logout()
 
-        # Also one can login with 'xxx@free.kindle.com' when he/she actually set up
-        # with 'xxx@kindle.com'. And vice versa.
-        response = self.client.post(url, {'username':'111@free.kindle.com', 'password':'111'})
+        # Also one can login with 'xxx@free.kindle.com' when he/she
+        # actually set up with 'xxx@kindle.com'. And vice versa.
+        response = self.client.post(url,
+                                    {'username': '111@free.kindle.com',
+                                     'password': '111'})
         self.assertEqual(urlparse(response['Location']).path, url_success)
         self.client.logout()
         ## the 'vice versa'
         user = User.objects.get(username='111')
         user.email = '111@free.kindle.com'
-        response = self.client.post(url, {'username':'111@kindle.com', 'password':'111'})
+        response = self.client.post(url,
+                                    {'username': '111@kindle.com',
+                                     'password': '111'})
         self.assertEqual(urlparse(response['Location']).path, url_success)
         self.client.logout()
 
@@ -117,8 +139,22 @@ class ViewsTest(TestCase):
         self.client.login(username='111', password='111')
         response = self.client.get(home)
         self.assertEqual(response.status_code, 200)
-        
         self.client.get(url)
         response = self.client.get(home)
         self.assertEqual(response.status_code, 302)
 
+    def test_profile(self):
+        url = reverse("accounts_profile")
+        self.client.login(username='111', password='111')
+
+        response = self.client.post(url, {'first_name': '222'})
+        u = User.objects.get(username='111')
+        self.assertEqual(u.first_name, '222')
+
+        response = self.client.post(url, {'email': '222@kindle.com'})
+        u = User.objects.get(username='111')
+        self.assertEqual(u.email, '222@kindle.com')
+
+        response = self.client.post(url, {'email': '222@free.kindle.com'})
+        u = User.objects.get(username='111')
+        self.assertEqual(u.email, '222@free.kindle.com')
