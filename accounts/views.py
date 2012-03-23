@@ -170,10 +170,12 @@ def get_douban_api(request):
         return None
 
     api = pydouban.Api()
+    token = request.session["douban_oauth_token"]
+    token_secret = request.session["douban_oauth_token_secret"]
     api.set_oauth(key=settings.DOUBAN_API_KEY, 
                   secret=settings.DOUBAN_SECRET,
-                  acs_token=request.session["douban_oauth_token"], 
-                  acs_token_secret=request.session["douban_oauth_token_secret"])
+                  acs_token=token, 
+                  acs_token_secret=token_secret)
     return api
 
 
@@ -187,7 +189,11 @@ def login_with_twitter(request):
     
 
 def twitter_callback(request):
-    req_token = oauth.Token.from_string(request.session.get('twitter_request_token'))
+    token_string = request.session.get('twitter_request_token')
+    if not token_string:
+        messages.error(request, "Invalid Twitter Token.")
+        return HttpResponseRedirect(reverse("site_login"))
+    req_token = oauth.Token.from_string(token_string)
     api = OAuthApi(settings.TWITTER_CONSUMER_KEY,
                    settings.TWITTER_CONSUMER_SECRET,
                    req_token.key,
@@ -251,7 +257,8 @@ def password_reset(request):
             user.set_password(new_password)
             user.save()
             UUID.objects.get(uuid=uuid_string).delete()
-            messages.success(request, "The password has been reset successfully.")
+            messages.success(request, 
+                             "The password has been reset successfully.")
             url = reverse('site_login')
             return HttpResponseRedirect(url)
 
@@ -283,6 +290,6 @@ def password_reset(request):
                 send_files_to([f], [email])
                 os.remove(f)
             messages.success(request, 
-                             "Password Reset URL has been sent to your Kindle. "
-                             "Please check it in a few minutes.")
+                             "Password Reset URL has been sent to your Kindle."
+                             " Please check it in a few minutes.")
     return HttpResponseRedirect(url)
