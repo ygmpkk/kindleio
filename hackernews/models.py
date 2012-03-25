@@ -8,7 +8,6 @@ from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils.encoding import smart_str
-from django.utils.timezone import now
 
 from kindleio.models import logger
 from kindleio.utils.briticle import Briticle
@@ -34,10 +33,7 @@ POINTS_LIMIT_PAIRS = ((DISABLED, "Do Not Send to Me"),
 class HackerNewsManager(models.Manager):
     def update_news(self, article_list):
         """
-        Update HackerNews records:
-        1. Add news when it doesnot exist
-        2. Update points when it exists
-        3. Update datetime when saving to file (just for quering convenience)
+        Update HackerNews records
         """
         count_created = count_updated = count_filed = 0
         for article in article_list:
@@ -52,8 +48,8 @@ class HackerNewsManager(models.Manager):
                     count_updated += 1
             else:
                 news = self.create(url=article['url'],
-                    points=article['points'],
-                    title=smart_str(article['title']))
+                                   points=article['points'],
+                                   title=smart_str(article['title']))
                 count_created += 1
                 logger.info("[else] news created.")
 
@@ -78,7 +74,7 @@ class HackerNewsManager(models.Manager):
                 if mobi:
                     news.filed = True
                     news.file_path = mobi
-                    news.added = now()
+                    news.html = br.html
                     news.save()
                     signals.file_saved.send(sender=news)
                     count_filed += 1
@@ -94,6 +90,7 @@ class HackerNews(models.Model):
     file_path = models.CharField(max_length=512)
     sent = models.BooleanField(default=True)
     added = models.DateTimeField(auto_now_add=True)
+    html = models.TextField(blank=True, null=True)
 
     objects = HackerNewsManager()
 
@@ -104,6 +101,7 @@ class HackerNews(models.Model):
         return self.title
     __unicode__ = __str__
     __repr__ = __str__
+
 
 class SendRecord(models.Model):
     news = models.ForeignKey(HackerNews)
