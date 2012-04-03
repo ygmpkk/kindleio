@@ -14,13 +14,18 @@ O Services:
 
 - Record your Kindle Highlights.
 
-Set Up
-======
 
 Requirements
 ------------
 
-- briticle
+- [briticle](https://github.com/mitnk/briticle)
+
+Run Unit Tests
+==============
+
+```
+$ ./manage.py test accounts hackernews notes
+```
 
 Example of local_settings (the file):
 -------------------------------------
@@ -111,11 +116,3 @@ LOGGING = {
 
 ```
 
-- #ToAdd
-
-Run Unit Tests
-==============
-
-```
-$ ./manage.py test accounts hackernews notes
-```
