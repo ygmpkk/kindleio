@@ -21,6 +21,7 @@ from kindleio.utils.decorators import admin_required
 @admin_required
 def generate_weekly(request):
     mobi = HackerNews.objects.generate_weekly()
+    logger.info("Generating Weekly: %s" % mobi)
     return HttpResponse("Weekly mobi generated: %s\n" % mobi)
 
 
