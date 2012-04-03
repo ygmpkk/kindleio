@@ -9,7 +9,7 @@ from django.utils.timezone import now
 
 from kindleio.accounts.decorators import login_required
 from kindleio.hackernews.models import (HackerNews, SendRecord,
-    UserConfig, EMAIL_COUNT_LIMIT)
+    UserConfig, Weekly, WeeklySendRecord, EMAIL_COUNT_LIMIT)
 from kindleio.hackernews.utils import HackerNewsArticle
 from kindleio.hackernews.utils import get_limit_points
 from kindleio.models import logger
@@ -39,7 +39,7 @@ def weekly_sending(request):
         return HttpResponse(info + "\n")
 
     try:
-        send_files_to([news.file_path], emails)
+        send_files_to([weekly.file_path], emails)
     except Exception, e:
         info = "send weekly mail failed. Exception: %s" % e
         logger.error(info)
