@@ -66,6 +66,11 @@ class HackerNewsManager(models.Manager):
                 html += u'<br><br><a href="#toc">Go to table of content</a>'
                 toc += u'<li><a href="#%02d">%s</a></li>\r\n' % (idx, news.title)
                 idx += 1
+
+        if idx == 1:
+            # No available articles for this weekly
+            return None
+
         toc += u"</ul><mbp:pagebreak/>\r\n"
 
         with open(file_weekly, 'w') as f:
