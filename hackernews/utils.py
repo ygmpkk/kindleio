@@ -64,8 +64,8 @@ class HackerNewsArticle(object):
 
         try:
             soup = get_soup_by_url(self.url)
-        except:
-            logger.info("Time out when fetching HackerNewsArticle.")
+        except Exception, e:
+            logger.info("Time out when fetching HackerNewsArticle: %s", e)
             return
 
         # Reset articles before fetching

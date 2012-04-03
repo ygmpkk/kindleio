@@ -9,7 +9,7 @@ from django.shortcuts import render_to_response
 from django.template import RequestContext
 from kindleio.accounts.decorators import login_required
 from kindleio.utils.decorators import kindle_email_required
-from kindleio.utils.briticle import Briticle
+from kindleio.utils.briticle import BriticleFile
 from kindleio.utils import send_to_kindle
 
 @login_required
@@ -24,8 +24,8 @@ def home(request):
             messages.error(request, "Need a valid URL.")
             return HttpResponseRedirect("/")
 
-        br = Briticle(url)
-        doc = br.save_to_file(settings.KINDLE_LIVE_DIR, sent_by="Kindle.io")
+        bf = BriticleFile(url, settings.KINDLE_LIVE_DIR)
+        doc = bf.save_to_mobi()
         if doc:
             if not settings.DEBUG:
                 send_to_kindle(request, [doc])

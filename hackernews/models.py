@@ -1,3 +1,5 @@
+import datetime
+from datetime import timedelta
 import logging
 import os
 from urllib2 import URLError
@@ -10,23 +12,22 @@ from django.dispatch import receiver
 from django.utils.encoding import smart_str
 
 from kindleio.models import logger
-from kindleio.utils.briticle import Briticle
+from kindleio.utils.briticle import BriticleFile
 from kindleio.hackernews import signals
 
 
 DISABLED = 7777777
 EMAIL_COUNT_LIMIT = 14
-POINTS_LIMITS = (100, 149, 200, 249, 300, 349, 400, 500, DISABLED)
+POINTS_LIMITS = (200, 249, 300, 349, 400, 500, DISABLED)
 POINTS_LIMIT_TO_SAVE = POINTS_LIMITS[0]
-POINTS_LIMIT_PAIRS = ((DISABLED, "Do Not Send to Me"),
-               (100, "100 (approximately 20 articles per day)"),
-               (149, "149 (approximately 14 articles per day)"),
-               (200, "200 (approximately 8 articles per day)"),
-               (249, "249 (approximately 5 articles per day)"),
-               (300, "300 (approximately 3 articles per day)"),
-               (349, "349 (approximately 2 articles per day)"),
-               (400, "400 (rare)"),
-               (500, "500 (very rare)")
+POINTS_LIMIT_PAIRS = (
+    (DISABLED, "Do Not Send to Me"),
+    (200, "200 (approximately 8 articles per day)"),
+    (249, "249 (approximately 5 articles per day)"),
+    (300, "300 (approximately 3 articles per day)"),
+    (349, "349 (approximately 2 articles per day)"),
+    (400, "400 (rare)"),
+    (500, "500 (very rare)")
 )
 
 
@@ -57,24 +58,32 @@ class HackerNewsManager(models.Manager):
             if article['points'] >= POINTS_LIMIT_TO_SAVE and not news.filed:
                 logger.info("article points is high enough, and not filed, try to ...")
                 try:
-                    br = Briticle(news.url)
+                    year, week_number, _ = datetime.date.today().isocalendar()
+                    dir_hackernews = settings.HACKER_NEWS_DIR 
+                    if not os.path.exists(dir_hackernews):
+                        os.mkdir(dir_hackernews)
+                    dir_year = os.path.join(dir_hackernews, str(year))
+                    if not os.path.exists(dir_year):
+                        os.mkdir(dir_year)
+                    dir_week = os.path.join(dir_year, "%02d" % week_number)
+                    if not os.path.exists(dir_week):
+                        os.mkdir(dir_week)
+                    bf = BriticleFile(news.url, dir_week)
                 except Exception, e:
                     if isinstance(e, URLError) or 'timed out' in str(e):
                         logger.info("URLError or Time out Exception: %s URL: %s" % (e, news.url))
                         continue
                     raise
-                logger.info("... Briticle object fetch ok. len: %s" % len(br.text))
 
                 try:
-                    mobi = br.save_to_file(settings.HACKER_NEWS_DIR, title=news.title, sent_by="Kindle.io")
-                    logger.info("... filed it ok!")
+                    mobi = bf.save_to_mobi(title=news.title)
                 except Exception, e:
                     logger.info("Failed to save fiel: %s URL: %s" % (e, news.url))
                     continue
                 if mobi:
                     news.filed = True
                     news.file_path = mobi
-                    news.html = br.html
+                    news.html = bf.html
                     news.save()
                     signals.file_saved.send(sender=news)
                     count_filed += 1
@@ -98,7 +107,7 @@ class HackerNews(models.Model):
         ordering = ["-added"]
 
     def __str__(self):
-        return self.title
+        return "<HackerNews: %s>" % self.title
     __unicode__ = __str__
     __repr__ = __str__
 
