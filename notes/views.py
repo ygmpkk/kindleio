@@ -46,24 +46,24 @@ def config(request):
             twitter_id = twitter_id[1:]
         if not twitter_id:
             messages.error(request, "Twitter ID needed.")
-        if '@' in twitter_id:
+        elif '@' in twitter_id:
             messages.error(request, "Invalid Twitter ID. It should like @kindleio")
-
-        profile = request.user.get_profile()
-        if profile.twitter_id != twitter_id:
-            if UserProfile.objects.filter(twitter_id=twitter_id).exists():
-                messages.error(request, "This twitter id was already set by others.")
-            else:
-                try:
-                    if not settings.DEBUG:
-                        api = get_twitter_private_api()
-                        api.CreateFriendship(twitter_id)
-                except Exception, e:
-                    messages.error(request, "Failed when following your account, please try again.")
+        else:
+            profile = request.user.get_profile()
+            if profile.twitter_id != twitter_id:
+                if UserProfile.objects.filter(twitter_id=twitter_id).exists():
+                    messages.error(request, "This twitter id was already set by others.")
                 else:
-                    profile.twitter_id = twitter_id
-                    profile.save()
-                    messages.success(request, "Your twitter id was set successfully.")
+                    try:
+                        if not settings.DEBUG:
+                            api = get_twitter_private_api()
+                            api.CreateFriendship(twitter_id)
+                    except Exception, e:
+                        messages.error(request, "Failed when following your account, please try again.")
+                    else:
+                        profile.twitter_id = twitter_id
+                        profile.save()
+                        messages.success(request, "Your twitter id was set successfully.")
     return HttpResponseRedirect(reverse("accounts_profile"))
 
 

@@ -39,13 +39,17 @@ class HackerNewsManager(models.Manager):
         date_now = now()
         year = date_now.isocalendar()[0]
         week_number = date_now.isocalendar()[1] - 1
+        dir_weekly = os.path.join(settings.HACKER_NEWS_DIR, str(year), "%02d" % week_number)
+        file_weekly = os.path.join(dir_weekly, 'HackerNews_Weekly_%02d.html' % week_number)
+        mobi_file = re.sub(r'\.html$', '.mobi', file_weekly)
+        if os.path.exists(mobi_file):
+            return mobi_file
+
         ten_days_age = date_now - datetime.timedelta(days=10)
         results = self.filter(added__gt=ten_days_age,
                               points__gt=POINTS_LIMIT_TO_SAVE,
                               filed=True)
 
-        dir_weekly = os.path.join(settings.HACKER_NEWS_DIR, str(year), "%02d" % week_number)
-        file_weekly = os.path.join(dir_weekly, 'HackerNews_Weekly_%02d.html' % week_number)
         idx = 1
         toc = u'<a name="toc"></a><ul>\r\n'
         html = u""
@@ -75,9 +79,9 @@ class HackerNewsManager(models.Manager):
         cmd = ["kindlegen", file_weekly, "-o", nut_mobi_name]
         subprocess.call(cmd)
         os.remove(file_weekly)
-        mobi_file = re.sub(r'\.html$', '.mobi', file_weekly)
         if not os.path.exists(mobi_file):
             return None
+        Weekly.objects.create(week_number=week_number, file_path=mobi_file)
         return mobi_file
 
     def update_news(self, article_list):
@@ -127,7 +131,7 @@ class HackerNewsManager(models.Manager):
                     raise
 
                 try:
-                    mobi = bf.save_to_mobi(title=news.title)
+                    mobi = bf.save_to_mobi(title=news.title, sent_by="Kindle.io")
                 except Exception, e:
                     logger.info("Failed to save fiel: %s URL: %s" % (e, news.url))
                     continue
@@ -176,9 +180,32 @@ class SendRecord(models.Model):
 class UserConfig(models.Model):
     user = models.OneToOneField(User)
     points = models.IntegerField(default=300)
+    receive_weekly = models.BooleanField(default=True)
 
     def __unicode__(self):
         return u"HackerNews Config " + self.user.username
+
+
+class Weekly(models.Model):
+    week_number = models.IntegerField()
+    file_path = models.CharField(max_length=512)
+    added = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-added"]
+
+    def __unicode__(self):
+        return u"<HackerNews Weekly %02d" % self.week_number
+
+
+class WeeklySendRecord(models.Model):
+    weekly = models.ForeignKey(Weekly)
+    email = models.CharField(max_length=80)
+    sent = models.BooleanField(default=False)
+    added = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-added"]
 
 
 @receiver(signals.points_updated)
@@ -207,3 +234,13 @@ def create_receive_list(sender, **kwargs):
 def create_user_config(sender, instance, created, **kwargs):
     if created:
         UserConfig.objects.create(user=instance)
+
+
+@receiver(post_save, sender=Weekly, dispatch_uid="create_weekly")
+def create_weekly(sender, instance, created, **kwargs):
+    if created:
+        UserConfig.objects.create(user=instance)
+        from kindleio.hackernews.utils import get_weekly_receivers
+        for email in get_weekly_receivers():
+            WeeklySendRecord.objects.create(weekly=sender, email=email)
+

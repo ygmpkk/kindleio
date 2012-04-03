@@ -24,6 +24,10 @@ class UserProfile(models.Model):
         from kindleio.hackernews.utils import get_user_points
         return get_user_points(self.user)
 
+    def receive_weekly(self):
+        from kindleio.hackernews.utils import is_receive_weekly
+        return is_receive_weekly(self.user)
+
     def email(self):
         return self.user.email
 

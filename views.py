@@ -29,13 +29,11 @@ def home(request):
         except Exception, e:
             if isinstance(e, URLError) or 'timed out' in str(e):
                 logger.info("URLError or Time out Exception: %s URL: %s" % (e, url))
-                continue
             elif isinstance (e, UnicodeEncodeError):
                 logger.info("UnicodeEncodeError: %s URL: %s" % (e, url))
-                continue
             raise
 
-        doc = bf.save_to_mobi()
+        doc = bf.save_to_mobi(sent_by="Kindle.io")
         if doc:
             if not settings.DEBUG:
                 send_to_kindle(request, [doc])

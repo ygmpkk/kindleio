@@ -7,7 +7,7 @@ body {background: url("/media/img/bg.png");}
 .logo {text-align:left;margin:50px 0px 30px;}
 .logo span {float:right; color:#E47911;}
 .tab-content {margin:0px 6px 0;}
-.tab-content label {margin:8px 0 4px;}
+.tab-content label {margin:8px 0 4px; font-weight:bold;}
 .help-block span {color:#E47911;}
 .form-actions {padding-left:20px !important;}
 </style>
@@ -51,15 +51,25 @@ body {background: url("/media/img/bg.png");}
             </div>
 
             <div class="tab-pane" id="hackernews">
-                <p>Kindle.io can send <a href="http://news.ycombinator.com/">Hacker News</a> articles to your kindle.</p>
+                <p>Kindle.io can send <a href="http://news.ycombinator.com/">Hacker News</a> articles to your kindle.
+                    There are two type of service: Live and Weekly. You can use both of them.
+                </p>
+                <hr>
+
                 <form method="post" action="{% url hackernews_config %}" class="form-horizontal">{% csrf_token %}
-                    <label for="points_limit">Points Limit</label>
+                    <label for="points_limit">Receive HackerNews Live</label>
                     <select id="points_limit" name="points_limit" class="span4">
                         {% for points, title in points_list %}
                         <option value="{{ points }}"{% ifequal request.user.get_profile.hn_points points %} selected="selected"{% endifequal %}>{{ title }}</option>
                         {% endfor %}
                     </select>
-                    <p class="help-block">Only articles that whose points are over this Limit will be sent to your kindle.</p>
+                    <p class="help-block">Articles over this points will sent to you immediately.</p>
+
+                    <hr>
+                    <label class="checkbox">
+                        <input type="checkbox" name="receive_weekly" {% if request.user.get_profile.receive_weekly %} checked="checked"{% endif %}> Receive HackerNews Weekly
+                    </label>
+                    <p class="help-block">Send once a week. Articles over 200 points.</p>
 
                     <div class="form-actions">
                         <input type="submit" class="btn btn-primary" value="Save changes">

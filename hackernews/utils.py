@@ -4,6 +4,20 @@ from kindleio.hackernews.models import UserConfig, POINTS_LIMITS
 from kindleio.models import logger
 from kindleio.utils import get_soup_by_url
 
+def is_receive_weekly(user):
+    if UserConfig.objects.filter(user=user).exists():
+        return UserConfig.objects.get(user=user).receive_weekly
+    return False
+
+def get_weekly_receivers():
+    from kindleio.accounts.models import UserProfile
+    ucs = UserConfig.objects.filter(receive_weekly=True)
+    email_list = []
+    for uc in ucs:
+        if not uc.user.email:
+            continue
+        email_list.append(uc.user.email)
+    return email_list
 
 def get_limit_points(points):
     try:
@@ -33,14 +47,6 @@ def get_user_points(user):
     if UserConfig.objects.filter(user=user).exists():
         return UserConfig.objects.get(user=user).points
     return 0
-
-def set_user_points(user, points):
-    if UserConfig.objects.filter(user=user).exists():
-        uc = UserConfig.objects.get(user=user)
-        uc.points = points
-        uc.save()
-        return True
-    return False
 
 
 class HackerNewsArticle(object):

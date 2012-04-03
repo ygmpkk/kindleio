@@ -9,9 +9,9 @@ from django.utils.timezone import now
 
 from kindleio.accounts.decorators import login_required
 from kindleio.hackernews.models import (HackerNews, SendRecord,
-    EMAIL_COUNT_LIMIT)
+    UserConfig, EMAIL_COUNT_LIMIT)
 from kindleio.hackernews.utils import HackerNewsArticle
-from kindleio.hackernews.utils import get_limit_points, set_user_points
+from kindleio.hackernews.utils import get_limit_points
 from kindleio.models import logger
 from kindleio.utils import send_files_to
 from kindleio.utils.decorators import admin_required
@@ -23,15 +23,44 @@ def generate_weekly(request):
     mobi = HackerNews.objects.generate_weekly()
     return HttpResponse("Weekly mobi generated: %s\n" % mobi)
 
+
+@csrf_exempt
+@admin_required
+def weekly_sending(request):
+    date_now = now()
+    week_number = date_now.isocalendar()[1] - 1
+    weekly = Weekly.objects.get(week_number=week_number)
+    receivers = WeeklySendRecord.objects.filter(weekly=weekly, send=False)[:EMAIL_COUNT_LIMIT]
+    emails = [x.email for x in receivers]
+    if len(emails) == 0:
+        info = "Weekly %02d sent complete."
+        logger.info(info)
+        return HttpResponse(info + "\n")
+
+    try:
+        send_files_to([news.file_path], emails)
+    except Exception, e:
+        info = "send weekly mail failed. Exception: %s" % e
+        logger.error(info)
+    else:
+        for item in receivers:
+            item.sent = True
+            item.save()
+    return HttpResponse("Weekly sent one round successfully!\n")
+
+
 @login_required
 def config(request):
     if request.method == "POST":
+        uc = UserConfig.objects.get(user=request.user)
         points = request.POST.get("points_limit", 500)
         points = get_limit_points(points)
         if points:
-            set_user_points(request.user, points)
-        messages.success(request,
-                         "Your HackerNews profile was updated successfully")
+            uc.points = points
+        receive_weekly = request.POST.get("receive_weekly", None)
+        uc.receive_weekly = (receive_weekly is not None)
+        uc.save()
+        messages.success(request, "Your HackerNews profile was updated successfully")
     return HttpResponseRedirect(reverse("accounts_profile"))
 
 @csrf_exempt
