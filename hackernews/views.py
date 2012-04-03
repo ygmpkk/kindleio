@@ -30,7 +30,16 @@ def generate_weekly(request):
 def weekly_sending(request):
     date_now = now()
     week_number = date_now.isocalendar()[1] - 1
-    weekly = Weekly.objects.get(week_number=week_number)
+    try:
+        weekly = Weekly.objects.get(week_number=week_number)
+    except Weekly.DoesNotExist:
+        info = "This Weekly Does not exist"
+        return HttpResponse(info + "\n")
+
+    if not weekly.file_path:
+        info = "No file for this Weekly"
+        return HttpResponse(info + "\n")
+
     receivers = WeeklySendRecord.objects.filter(weekly=weekly, send=False)[:EMAIL_COUNT_LIMIT]
     emails = [x.email for x in receivers]
     if len(emails) == 0:
