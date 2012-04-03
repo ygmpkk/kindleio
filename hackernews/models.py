@@ -1,7 +1,9 @@
 import datetime
-from datetime import timedelta
 import logging
 import os
+import re
+import subprocess
+from datetime import timedelta
 from urllib2 import URLError
 
 from django.db import models
@@ -10,6 +12,7 @@ from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils.encoding import smart_str
+from django.utils.timezone import now
 
 from kindleio.models import logger
 from kindleio.utils.briticle import BriticleFile
@@ -32,6 +35,51 @@ POINTS_LIMIT_PAIRS = (
 
 
 class HackerNewsManager(models.Manager):
+    def generate_weekly(self):
+        date_now = now()
+        year = date_now.isocalendar()[0]
+        week_number = date_now.isocalendar()[1] - 1
+        ten_days_age = date_now - datetime.timedelta(days=10)
+        results = self.filter(added__gt=ten_days_age,
+                              points__gt=POINTS_LIMIT_TO_SAVE,
+                              filed=True)
+
+        dir_weekly = os.path.join(settings.HACKER_NEWS_DIR, str(year), "%02d" % week_number)
+        file_weekly = os.path.join(dir_weekly, 'HackerNews_Weekly_%02d.html' % week_number)
+        idx = 1
+        toc = u'<a name="toc"></a><ul>\r\n'
+        html = u""
+        for news in results:
+            if news.added.isocalendar()[1] != week_number:
+                continue
+            html_file = re.sub(r'\.\w+$', '.html', news.file_path)
+            if not os.path.exists(html_file):
+                continue
+            with open(html_file) as file_to_read:
+                html += u'<mbp:pagebreak/><a name="%02d"></a>' % idx
+                content = file_to_read.read()
+                html += content.decode('utf8')
+                html += u'<br><br><a href="#toc">Go to table of content</a>'
+                toc += u'<li><a href="#%02d">%s</a></li>\r\n' % (idx, news.title)
+                idx += 1
+        toc += u"</ul><mbp:pagebreak/>\r\n"
+
+        with open(file_weekly, 'w') as f:
+            f.write(u'<html><head><meta http-equiv="content-type" content="text/html; charset=utf-8">')
+            f.write(u'<title>HackerNews Weekly %s</title></head><body>' % week_number)
+            f.write(toc.encode('utf8'))
+            f.write(html.encode('utf8'))
+            f.write(u'</body></html>')
+        
+        nut_mobi_name = re.sub(r'.html$', '.mobi', (file_weekly.split('/')[-1]))
+        cmd = ["kindlegen", file_weekly, "-o", nut_mobi_name]
+        subprocess.call(cmd)
+        os.remove(file_weekly)
+        mobi_file = re.sub(r'\.html$', '.mobi', file_weekly)
+        if not os.path.exists(mobi_file):
+            return None
+        return mobi_file
+
     def update_news(self, article_list):
         """
         Update HackerNews records
@@ -72,6 +120,9 @@ class HackerNewsManager(models.Manager):
                 except Exception, e:
                     if isinstance(e, URLError) or 'timed out' in str(e):
                         logger.info("URLError or Time out Exception: %s URL: %s" % (e, news.url))
+                        continue
+                    elif isinstance (e, UnicodeEncodeError):
+                        logger.info("UnicodeEncodeError: %s URL: %s" % (e, news.url))
                         continue
                     raise
 

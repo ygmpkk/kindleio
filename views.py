@@ -24,7 +24,17 @@ def home(request):
             messages.error(request, "Need a valid URL.")
             return HttpResponseRedirect("/")
 
-        bf = BriticleFile(url, settings.KINDLE_LIVE_DIR)
+        try:
+            bf = BriticleFile(url, settings.KINDLE_LIVE_DIR)
+        except Exception, e:
+            if isinstance(e, URLError) or 'timed out' in str(e):
+                logger.info("URLError or Time out Exception: %s URL: %s" % (e, url))
+                continue
+            elif isinstance (e, UnicodeEncodeError):
+                logger.info("UnicodeEncodeError: %s URL: %s" % (e, url))
+                continue
+            raise
+
         doc = bf.save_to_mobi()
         if doc:
             if not settings.DEBUG:

@@ -1,9 +1,11 @@
+import datetime
 import time
 
 from django.contrib import messages
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.views.decorators.csrf import csrf_exempt
+from django.utils.timezone import now
 
 from kindleio.accounts.decorators import login_required
 from kindleio.hackernews.models import (HackerNews, SendRecord,
@@ -14,6 +16,12 @@ from kindleio.models import logger
 from kindleio.utils import send_files_to
 from kindleio.utils.decorators import admin_required
 
+
+@csrf_exempt
+@admin_required
+def generate_weekly(request):
+    mobi = HackerNews.objects.generate_weekly()
+    return HttpResponse("Weekly mobi generated: %s\n" % mobi)
 
 @login_required
 def config(request):
@@ -41,7 +49,8 @@ def fetch(request):
 @admin_required
 def check_for_sending(request):
     """ TODO: UT needed."""
-    news_list = HackerNews.objects.filter(sent=False)
+    one_week_ago = now()  - datetime.timedelta(days=7)
+    news_list = HackerNews.objects.filter(added__gt=one_week_ago, sent=False)
     count_file = 0
     count_email = 0
     for news in news_list:
