@@ -95,25 +95,31 @@ class HackerNewsManager(models.Manager):
         """
         count_created = count_updated = count_filed = 0
         for article in article_list:
-            logger.info("Enter article:" + article['title'])
             if self.filter(url=article['url']).exists():
                 news = self.get(url=article['url'])
+
+                # Update the points of the article, send the points update signal
                 if news.filed and news.file_path and article['points'] > news.points:
                     pre_points = news.points
                     news.points = article['points']
                     news.save()
                     signals.points_updated.send(sender=news, pre_points=pre_points)
                     count_updated += 1
+
+                # If the article is abort before. Ignore it.
+                # We can check the error log for reasons
+                if news.aborted:
+                    continue
+
             else:
+                # Create an new one if it does not exist
                 news = self.create(url=article['url'],
                                    points=article['points'],
                                    title=smart_str(article['title']))
                 count_created += 1
-                logger.info("[else] news created.")
 
-            # Save articles to file whose points big enough
-            if article['points'] >= POINTS_LIMIT_TO_SAVE and not news.filed:
-                logger.info("article points is high enough, and not filed, try to ...")
+            # Save article whose points is high enough into file
+            if (not news.filed) and article['points'] >= POINTS_LIMIT_TO_SAVE:
                 try:
                     year, week_number, _ = datetime.date.today().isocalendar()
                     dir_hackernews = settings.HACKER_NEWS_DIR 
@@ -128,18 +134,33 @@ class HackerNewsManager(models.Manager):
                     bf = BriticleFile(news.url, dir_week)
                 except Exception, e:
                     if isinstance(e, URLError) or 'timed out' in str(e):
-                        logger.info("URLError or Time out Exception: %s URL: %s" % (e, news.url))
+                        logger.error("URLError or Time out Exception: %s URL: %s" % (e, news.url))
+                        news.aborted = True
+                        news.save()
                         continue
                     elif isinstance (e, UnicodeEncodeError):
-                        logger.info("UnicodeEncodeError: %s URL: %s" % (e, news.url))
+                        logger.error("UnicodeEncodeError: %s URL: %s" % (e, news.url))
+                        news.aborted = True
+                        news.save()
                         continue
                     raise
+
+                # Abort if there is not content
+                if bf.is_empty():
+                    logger.info("No content found for: %s" % news.url)
+                    news.aborted = True
+                    news.save()
+                    continue
 
                 try:
                     mobi = bf.save_to_mobi(title=news.title, sent_by="Kindle.io")
                 except Exception, e:
-                    logger.info("Failed to save fiel: %s URL: %s" % (e, news.url))
+                    logger.error("Failed while calling bf.save_to_mobi(). %s: %s URL: %s" % \
+                                 (e.__class__, e, news.url))
+                    news.aborted = True
+                    news.save()
                     continue
+
                 if mobi:
                     news.filed = True
                     news.file_path = mobi
@@ -149,6 +170,9 @@ class HackerNewsManager(models.Manager):
                     count_filed += 1
                 else:
                     logger.error("Failed to save file. URL: %s" % news.url)
+                    news.aborted = True
+                    news.save()
+
         return count_created, count_updated, count_filed
 
 class HackerNews(models.Model):
@@ -160,6 +184,7 @@ class HackerNews(models.Model):
     sent = models.BooleanField(default=True)
     added = models.DateTimeField(auto_now_add=True)
     html = models.TextField(blank=True, null=True)
+    aborted = models.BooleanField(default=False)
 
     objects = HackerNewsManager()
 
