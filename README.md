@@ -1,7 +1,7 @@
 KindleIO
 ========
 
-A Kindle IO Service.
+A Kindle IO Service. Visit [http://kindle.io](http://kindle.io) for more details.
 
 I Services:
 -----------
