@@ -50,7 +50,7 @@ def get_user_points(user):
 
 
 class HackerNewsArticle(object):
-    POINTS_MIN_LIMIT = 70
+    POINTS_MIN_LIMIT = 149
 
     def __str__(self):
         return u"<HackerNewsArticle %s articles insider>" % len(self.articles)
