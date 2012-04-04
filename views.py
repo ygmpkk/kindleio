@@ -7,7 +7,9 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.template import RequestContext
+
 from kindleio.accounts.decorators import login_required
+from kindleio.models import logger
 from kindleio.utils.decorators import kindle_email_required
 from kindleio.utils.briticle import BriticleFile
 from kindleio.utils import send_to_kindle
