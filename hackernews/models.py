@@ -271,5 +271,5 @@ def create_weekly(sender, instance, created, **kwargs):
     if created:
         from kindleio.hackernews.utils import get_weekly_receivers
         for email in get_weekly_receivers():
-            WeeklySendRecord.objects.create(weekly=sender, email=email)
+            WeeklySendRecord.objects.create(weekly=instance, email=email)
 
