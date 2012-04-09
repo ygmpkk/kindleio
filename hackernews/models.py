@@ -42,6 +42,8 @@ class HackerNewsManager(models.Manager):
         dir_weekly = os.path.join(settings.HACKER_NEWS_DIR, str(year), "%02d" % week_number)
         file_weekly = os.path.join(dir_weekly, 'HackerNews_Weekly_%02d.html' % week_number)
         mobi_file = re.sub(r'\.html$', '.mobi', file_weekly)
+        if Weekly.objects.filter(week_number=week_number).exists():
+            return "Error: this Weekly already generated"
         if os.path.exists(mobi_file):
             return mobi_file
 
