@@ -269,7 +269,6 @@ def create_user_config(sender, instance, created, **kwargs):
 @receiver(post_save, sender=Weekly, dispatch_uid="create_weekly")
 def create_weekly(sender, instance, created, **kwargs):
     if created:
-        UserConfig.objects.create(user=instance)
         from kindleio.hackernews.utils import get_weekly_receivers
         for email in get_weekly_receivers():
             WeeklySendRecord.objects.create(weekly=sender, email=email)
