@@ -43,7 +43,7 @@ def weekly_sending(request):
     receivers = WeeklySendRecord.objects.filter(weekly=weekly, sent=False)[:EMAIL_COUNT_LIMIT]
     emails = [x.email for x in receivers]
     if len(emails) == 0:
-        info = "Weekly %02d sent complete."
+        info = "Weekly sent complete."
         logger.info(info)
         return HttpResponse(info + "\n")
 

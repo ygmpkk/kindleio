@@ -227,7 +227,7 @@ class Weekly(models.Model):
         ordering = ["-added"]
 
     def __unicode__(self):
-        return u"<HackerNews Weekly %02d" % self.week_number
+        return u"<HackerNews Weekly %02d>" % self.week_number
 
 
 class WeeklySendRecord(models.Model):
