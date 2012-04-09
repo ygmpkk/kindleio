@@ -78,10 +78,11 @@ class HackerNewsManager(models.Manager):
         with open(file_weekly, 'w') as f:
             f.write(u'<html><head><meta http-equiv="content-type" content="text/html; charset=utf-8">')
             f.write(u'<title>HackerNews Weekly %s</title></head><body>' % week_number)
+            f.write(u'<h1>HackerNews Weekly %s</h1>' % week_number)
             f.write(toc.encode('utf8'))
             f.write(html.encode('utf8'))
             f.write(u'</body></html>')
-        
+
         nut_mobi_name = re.sub(r'.html$', '.mobi', (file_weekly.split('/')[-1]))
         cmd = ["kindlegen", file_weekly, "-o", nut_mobi_name]
         subprocess.call(cmd)
