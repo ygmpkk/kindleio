@@ -40,7 +40,7 @@ def weekly_sending(request):
         info = "No file for this Weekly"
         return HttpResponse(info + "\n")
 
-    receivers = WeeklySendRecord.objects.filter(weekly=weekly, send=False)[:EMAIL_COUNT_LIMIT]
+    receivers = WeeklySendRecord.objects.filter(weekly=weekly, sent=False)[:EMAIL_COUNT_LIMIT]
     emails = [x.email for x in receivers]
     if len(emails) == 0:
         info = "Weekly %02d sent complete."
