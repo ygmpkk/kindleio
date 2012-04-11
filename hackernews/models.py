@@ -66,7 +66,7 @@ class HackerNewsManager(models.Manager):
                 content = file_to_read.read()
                 html += content.decode('utf8')
                 html += u'<br><br><a href="#toc">Go to table of content</a>'
-                toc += u'<li><a href="#%02d">%s</a></li>\r\n' % (idx, news.title)
+                toc += u'<li><a href="#%02d">%s</a></li>\r\n' % (idx, news.title.title())
                 idx += 1
 
         if idx == 1:
