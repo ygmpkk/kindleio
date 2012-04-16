@@ -52,6 +52,7 @@ def weekly_sending(request):
     except Exception, e:
         info = "send weekly mail failed. Exception: %s" % e
         logger.error(info)
+        return HttpResponse(info + "\n")
     else:
         for item in receivers:
             item.sent = True
