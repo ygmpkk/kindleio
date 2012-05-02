@@ -38,18 +38,16 @@ def home(request):
         doc = bf.save_to_mobi(sent_by="Kindle.io")
         if doc:
             if not settings.DEBUG:
-                send_to_kindle(request, [doc])
+                send_to_kindle(request, [doc], subject=bf.title)
                 os.remove(doc)
             messages.success(request, "The doc has been sent to your kindle successfully!")
             return HttpResponseRedirect("/")
         else:
             messages.error(request, "Error: No file generated for this URL.")
             return HttpResponseRedirect("/")
-    
     return render_to_response('home.html',
                               context_instance=RequestContext(request))
 
 def about(request):
     return render_to_response('about.html',
                               context_instance=RequestContext(request))
-    

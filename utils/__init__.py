@@ -27,18 +27,22 @@ def generate_file(text, title="", file_name=""):
     return path
 
 
-def send_files_to(files, receivers):
+def send_files_to(files, receivers, subject=""):
     info = "Docs from Kindle.io"
     stmp = GSMTP(settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)
-    stmp.send_mail(receivers, info, info, files=files)
+    if not subject:
+        subject = info
+    stmp.send_mail(receivers, subject, info, files=files)
 
 
-def send_to_kindle(request, files):
+def send_to_kindle(request, files, subject=""):
     email = request.user.email
     if not email:
         return
     send_to = [email]
     info = "Docs from Kindle.io"
     stmp = GSMTP(settings.KINDLEIO_EMAIL, settings.KINDLEIO_EMAIL_PASSWD)
-    stmp.send_mail(send_to, info, info, files=files)
+    if not subject:
+        subject = info
+    stmp.send_mail(send_to, subject, info, files=files)
 

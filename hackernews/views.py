@@ -28,6 +28,7 @@ def generate_weekly(request):
 @csrf_exempt
 @admin_required
 def weekly_sending(request):
+    info = ""
     date_now = now()
     week_number = date_now.isocalendar()[1] - 1
     try:
@@ -44,19 +45,20 @@ def weekly_sending(request):
     emails = [x.email for x in receivers]
     if len(emails) == 0:
         info = "Weekly sent complete."
-        logger.info(info)
         return HttpResponse(info + "\n")
 
     try:
-        send_files_to([weekly.file_path], emails)
-    except Exception, e:
-        info = "send weekly mail failed. Exception: %s" % e
-        logger.error(info)
-    else:
+        logger.info("sending weekly to %s", emails)
+        subject = "Hacker News Weekly %s" % week_number
+        send_files_to([weekly.file_path], emails, subject=subject)
+        logger.info("Finished for sending weekly to %s", emails)
         for item in receivers:
             item.sent = True
             item.save()
-    return HttpResponse("Weekly sent one round successfully!\n")
+    except Exception, e:
+        info = "send weekly mail failed. Exception: %s Emails: %s" % (e, emails)
+        logger.error(info)
+    return HttpResponse(info + "\n")
 
 
 @login_required
@@ -101,7 +103,7 @@ def check_for_sending(request):
 
         receivers = [x.email for x in sr_list]
         try:
-            send_files_to([news.file_path], receivers)
+            send_files_to([news.file_path], receivers, subject=news.title)
             count_file += 1
             count_email += len(receivers)
         except Exception, e:
