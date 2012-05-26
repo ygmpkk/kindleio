@@ -212,7 +212,7 @@ def twitter_callback(request):
         return HttpResponseRedirect(reverse("accounts_profile"))
     request.session["twitter_id"] = screen_name
 
-    if not request.session.get("link_twitter_account", False):
+    if request.session.get("link_twitter_account", False):
         del request.session["link_twitter_account"]
         set_user_twitter_token(request.user, access_token.to_string())
         return HttpResponseRedirect(reverse("accounts_profile"))
