@@ -44,7 +44,7 @@ def home(request):
         doc = bf.save_to_mobi(sent_by="Kindle.io")
         if doc:
             if not settings.DEBUG:
-                send_to_kindle(request, [doc])
+                send_to_kindle(request, [doc], subject=bf.title)
                 os.remove(doc)
             messages.success(request, "The doc has been sent to your kindle successfully!")
             return HttpResponseRedirect("/")
