@@ -80,8 +80,8 @@ body {background: url("/media/img/bg.png");}
 
             <div class="tab-pane" id="notes">
                 {% if request.user.get_profile.twitter_token %}
-                    <label for="twitter_id">Your Twitter ID</label>:
-                    {{ request.user.get_profile.twitter_id }}
+                    <strong>Your Twitter ID</strong>:
+                    @{{ request.user.get_profile.twitter_id }}
                 {% else %}
                     <a class="btn btn-primary" href="{% url notes_link_twitter_account %}">Link a Twitter Account</a>
                 {% endif %}

@@ -158,7 +158,7 @@ def save_note(user, url, date, tweet_id):
             user_api = get_twitter_api(user=user)
             if len(status) + len(" #note") <= 140:
             	status += " #note"
-            if len(status) + len(remark) <= 138:
+            if remark and len(status) + len(remark) <= 138:
                 status = remark + ": " + status
             user_api.PostUpdates(status)
             user_api.DestroyStatus(tweet_id)

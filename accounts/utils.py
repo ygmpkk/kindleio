@@ -12,10 +12,13 @@ from kindleio.notes.utils import get_twitter_private_api
 
 def get_twitter_api(request=None, user=None):
     api = None
-    access_token = request.session.get('access_token')
+    access_token = ""
+
+    if request:
+        access_token = request.session.get('access_token')
     if not access_token:
         try:
-            profile = request.user.get_profile()
+            profile = user.get_profile()
             access_token = profile.twitter_token
         except UserProfile.DoesNotExist:
             pass
