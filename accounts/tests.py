@@ -139,9 +139,6 @@ class ViewsTest(TestCase):
         self.client.login(username='111', password='111')
         response = self.client.get(home)
         self.assertEqual(response.status_code, 200)
-        self.client.get(url)
-        response = self.client.get(home)
-        self.assertEqual(response.status_code, 302)
 
     def test_profile(self):
         url = reverse("accounts_profile")

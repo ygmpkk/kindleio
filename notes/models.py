@@ -4,11 +4,11 @@ from django.db import models
 
 class Note(models.Model):
     user = models.ForeignKey(User)
-    url = models.CharField(max_length=128, blank=True, null=True)
+    url = models.CharField(max_length=128, blank=True)
     text = models.CharField(max_length=1024)
-    remark = models.CharField(max_length=128, blank=True, null=True)
-    book = models.CharField(max_length=128, blank=True, null=True)
-    author = models.CharField(max_length=128, blank=True, null=True)
+    remark = models.CharField(max_length=128, blank=True)
+    book = models.CharField(max_length=128, blank=True)
+    author = models.CharField(max_length=128, blank=True)
     added = models.DateTimeField()
 
     class Meta:
@@ -28,7 +28,7 @@ class Note(models.Model):
 
 class Word(models.Model):
     user = models.ForeignKey(User)
-    url = models.CharField(max_length=128, blank=True, null=True)
+    url = models.CharField(max_length=128, blank=True)
     word = models.CharField(max_length=64)
     added = models.DateTimeField(auto_now_add=True)
 

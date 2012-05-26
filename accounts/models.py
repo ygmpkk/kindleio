@@ -17,8 +17,9 @@ class UserProfile(models.Model):
     user = models.OneToOneField(User)
 
     # Other fields here
-    douban_id = models.CharField(max_length=20, null=True, blank=True)
-    twitter_id = models.CharField(max_length=40, null=True, blank=True)
+    douban_id = models.CharField(max_length=20, blank=True)
+    twitter_id = models.CharField(max_length=40, blank=True)
+    twitter_token = models.CharField(max_length=256, blank=True)
 
     def hn_points(self):
         from kindleio.hackernews.utils import get_user_points

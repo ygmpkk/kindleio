@@ -1,6 +1,7 @@
 import datetime
 import re
 import rfc822
+import string
 import urllib2
 
 from django.conf import settings
@@ -14,13 +15,12 @@ from django.views.decorators.csrf import csrf_exempt
 
 from kindleio.accounts.decorators import login_required
 from kindleio.accounts.models import UserProfile
+from kindleio.accounts.utils import get_twitter_api
 from kindleio.models import logger
 from kindleio.utils import get_soup_by_url
 from kindleio.utils.decorators import admin_required
 from kindleio.notes.models import Note, Word
 from kindleio.notes.utils import get_twitter_private_api
-
-ASCII_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 
 
 @login_required
@@ -72,9 +72,9 @@ def config(request):
 def check(request):
     api = get_twitter_private_api()
     try:
-        messages = api.GetHomeTimeline()
-    except (urllib2.URLError, urllib2.HTTPError), e:
-        logger.error("HTTPError: %s" % e)
+        messages = api.GetHomeTimeline(count=100)
+    except:
+        logger.error("Error when GetHomeTimeline: %s" % e)
         return HttpResponse("Error.")
 
     info = []
@@ -88,11 +88,11 @@ def check(request):
         if not user:
             continue
         added = datetime.datetime(*rfc822.parsedate(msg.created_at)[:6])
-        info.append((user, url, added))
+        info.append((user, url, added, msg.id))
 
     count = 0
-    for user, url, added in info:
-        save_note(user, url, added)
+    for user, url, added, tweet_id in info:
+        save_note(user, url, added, tweet_id)
         count +=  1
     return HttpResponse("%s\n" % count)
 
@@ -102,7 +102,7 @@ def get_user_from_twitter_id(user_name):
         return users[0]
     return None
 
-def save_note(user, url, date=None):
+def save_note(user, url, date, tweet_id):
     soup = get_soup_by_url(url)
     tag = soup.find("div", {'class': 'highlightText'})
     text = ''.join(tag.findAll(text=True)).strip()
@@ -128,7 +128,7 @@ def save_note(user, url, date=None):
         author = ''
 
     if ' ' not in text \
-        and text[0] in ASCII_CHARS \
+        and text[0] in string.ascii_letters \
         and len(text) <= 64:
         if Word.objects.filter(word=text).count() == 0:
             Word.objects.create(user=user, url=url, word=text)
@@ -143,3 +143,13 @@ def save_note(user, url, date=None):
             note.author = author
         note.save()
 
+        # Delete this tweet and tweet it's content
+        status = text
+        if len(status) <= 140:
+            user_api = get_twitter_api(user=user)
+            if len(status) + len(" #note") <= 140:
+            	status += " #note"
+            if len(status) + len(remark) <= 138:
+                status = remark + ": " + status
+            user_api.PostUpdates(status)
+            user_api.DestroyStatus(tweet_id)

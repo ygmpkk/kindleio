@@ -5,14 +5,20 @@ from django.conf import settings
 from django.contrib import messages
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render_to_response
+from django.shortcuts import render
 from django.template import RequestContext
 
-from kindleio.accounts.decorators import login_required
+from kindleio.accounts.decorators import login_required, is_authenticated
 from kindleio.models import logger
 from kindleio.utils.decorators import kindle_email_required
 from kindleio.utils.briticle import BriticleFile
 from kindleio.utils import send_to_kindle
+
+def index(request):
+    if is_authenticated(request.user):
+    	return home(request)
+    else:
+        return about(request)
 
 @login_required
 @kindle_email_required
@@ -45,11 +51,7 @@ def home(request):
         else:
             messages.error(request, "Error: No file generated for this URL.")
             return HttpResponseRedirect("/")
-    
-    return render_to_response('home.html',
-                              context_instance=RequestContext(request))
+    return render(request, 'home.html')
 
 def about(request):
-    return render_to_response('about.html',
-                              context_instance=RequestContext(request))
-    
+    return render(request, 'about.html')

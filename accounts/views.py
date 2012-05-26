@@ -16,7 +16,8 @@ from django.core.urlresolvers import reverse
 
 from kindleio.accounts.decorators import login_required
 from kindleio.accounts.models import UUID
-from kindleio.accounts.utils import create_or_update_user, get_user_from_uuid
+from kindleio.accounts.utils import create_or_update_user, \
+    get_user_from_uuid, set_user_twitter_token, get_twitter_api
 from kindleio.hackernews.models import POINTS_LIMIT_PAIRS
 from kindleio.utils import generate_file, send_files_to
 
@@ -210,21 +211,12 @@ def twitter_callback(request):
     user = api.GetUserInfo()
     request.session["twitter_id"] = user.screen_name
     create_or_update_user(user.screen_name, "twitter")
+    set_user_twitter_token(user, access_token.to_string())
     next_url = request.session.get("next_url", "")
     if not next_url:
         next_url = reverse("accounts_profile")
     return HttpResponseRedirect(next_url)
 
-
-def get_twitter_api(request):
-    api = None
-    access_token = request.session.get('access_token')
-    if access_token:
-        access_token = oauth.Token.from_string(access_token)
-        api = OAuthApi(settings.TWITTER_CONSUMER_KEY,
-                       settings.TWITTER_CONSUMER_SECRET,
-                       access_token.key, access_token.secret, verified=True)
-    return api
 
 
 def password_reset(request):

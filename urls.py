@@ -12,7 +12,7 @@ urlpatterns = patterns('',
     # Uncomment the next line to enable the admin:
     url(r'^admin/', include(admin.site.urls)),
 
-    url(r'^$', 'kindleio.views.home', name='home'),
+    url(r'^$', 'kindleio.views.index', name='home'),
     url(r'^about/$', 'kindleio.views.about', name='about'),
     url(r'^accounts/', include('kindleio.accounts.urls')),
     url(r'^zongheng/', include('kindleio.zongheng.urls')),

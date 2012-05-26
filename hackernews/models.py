@@ -180,13 +180,13 @@ class HackerNewsManager(models.Manager):
 
 class HackerNews(models.Model):
     url = models.CharField(max_length=512)
-    title = models.CharField(max_length=512, blank=True, null=True)
+    title = models.CharField(max_length=512, blank=True)
     points = models.IntegerField(default=0)
     filed = models.BooleanField(default=False)
     file_path = models.CharField(max_length=512)
     sent = models.BooleanField(default=True)
     added = models.DateTimeField(auto_now_add=True)
-    html = models.TextField(blank=True, null=True)
+    html = models.TextField(blank=True)
     aborted = models.BooleanField(default=False)
 
     objects = HackerNewsManager()

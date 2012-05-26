@@ -1,12 +1,40 @@
 from datetime import timedelta
 
+from django.conf import settings
 from django.contrib.auth.signals import user_logged_in
 from django.contrib.auth.models import User
 from django.utils.timezone import now
 
+from kindleio.accounts import oauth
 from kindleio.accounts.models import UserProfile, UUID
+from kindleio.accounts.oauthtwitter import OAuthApi
 from kindleio.notes.utils import get_twitter_private_api
 
+def get_twitter_api(request=None, user=None):
+    api = None
+    access_token = request.session.get('access_token')
+    if not access_token:
+        try:
+            profile = request.user.get_profile()
+            access_token = profile.twitter_token
+        except UserProfile.DoesNotExist:
+            pass
+
+    if access_token:
+        access_token = oauth.Token.from_string(access_token)
+        api = OAuthApi(settings.TWITTER_CONSUMER_KEY,
+                       settings.TWITTER_CONSUMER_SECRET,
+                       access_token.key, access_token.secret, verified=True)
+    return api
+
+
+def set_user_twitter_token(user, token):
+    try:
+        profile = user.get_profile()
+    except UserProfile.DoesNotExist:
+        profile = UserProfile.objects.create(user=user)
+    profile.twitter_token = token
+    profile.save()
 
 def get_user_from_uuid(uuid):
     date_limit = now() - timedelta(days=1)
