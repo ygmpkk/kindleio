@@ -53,7 +53,7 @@ def create_or_update_user(user_id, attr):
 
     if attr not in ("douban", "twitter"):
         return
-    
+
     username = attr + "_" + user_id
     if User.objects.filter(username=username).exists():
         user = User.objects.get(username=username)
@@ -64,7 +64,7 @@ def create_or_update_user(user_id, attr):
         profile = user.get_profile()
     except UserProfile.DoesNotExist:
         profile = UserProfile.objects.create(user=user)
-    
+
     attr_name = attr + '_id'
     if getattr(profile, attr_name) != user_id:
         setattr(profile, attr_name, user_id)

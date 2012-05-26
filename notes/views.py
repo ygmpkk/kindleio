@@ -15,6 +15,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from kindleio.accounts.decorators import login_required
 from kindleio.accounts.models import UserProfile
+from kindleio.accounts.oauthtwitter import OAuthApi
 from kindleio.accounts.utils import get_twitter_api
 from kindleio.models import logger
 from kindleio.utils import get_soup_by_url
@@ -37,6 +38,14 @@ def index(request):
         {'notes': notes},
         context_instance=RequestContext(request))
 
+def link_twitter_account(request):
+    api = OAuthApi(settings.TWITTER_CONSUMER_KEY,
+                   settings.TWITTER_CONSUMER_SECRET)
+    request_token = api.getRequestToken()
+    request.session["twitter_request_token"] = request_token.to_string()
+    request.session["link_twitter_account"] = True
+    authorization_url = api.getAuthorizationURL(request_token)
+    return HttpResponseRedirect(authorization_url)
 
 @login_required
 def config(request):

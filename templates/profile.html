@@ -79,25 +79,24 @@ body {background: url("/media/img/bg.png");}
             </div>
 
             <div class="tab-pane" id="notes">
-                <form method="post" action="{% url notes_config %}" class="form-horizontal">{% csrf_token %}
-                    <label for="twitter_id">Your Twitter ID</label>
-                    <input type="text" id="twitter_id" name="twitter_id" value="{% if request.user.get_profile.twitter_id %}{{ request.user.get_profile.twitter_id }}{% endif %}">
-                    <p class="help-block">
-                        You must have your twitter id set to use Notes Service of Kindle.io<br>
-                        Here is the steps:
-                        <ol>
-                            <li>Set this Twitter account as your <a href="https://kindle.amazon.com/home/preferences">Kindle Share Social Network</a>.</li>
-                            <li>HighLight text while you are reading on Kindle, and, Share it.</li>
-                            <li>As a result, a tweet will be created, Kindle.io rely on this tweet to provide the notes service.</li>
-                            <li>The official twitter account named kindleio will follow you to trace your kindle shares. Not to block it ;)</li>
-                            <li>If you would highlight and share a lot, which may disturb your followers. Create a second twitter account.</li>
-                        </ol>
-                    </p>
-                    <div class="form-actions">
-                        <input type="submit" class="btn btn-primary" value="Save changes">
-                        <a href="" class="btn">Cancel</a>
-                    </div>
-                </form>
+                {% if request.user.get_profile.twitter_token %}
+                    <label for="twitter_id">Your Twitter ID</label>:
+                    {{ request.user.get_profile.twitter_id }}
+                {% else %}
+                    <a class="btn btn-primary" href="{% url notes_link_twitter_account %}">Link a Twitter Account</a>
+                {% endif %}
+
+                <p class="help-block">
+                    You must have your twitter id set to use Notes Service of Kindle.io<br>
+                    Here is the steps:
+                    <ol>
+                        <li>Set this Twitter account as your <a href="https://kindle.amazon.com/home/preferences">Kindle Share Social Network</a>.</li>
+                        <li>HighLight text while you are reading on Kindle, and, Share it.</li>
+                        <li>As a result, a tweet will be created, Kindle.io rely on this tweet to provide the notes service.</li>
+                        <li>The official twitter account named kindleio will follow you to trace your kindle shares. Not to block it ;)</li>
+                        <li>If you would highlight and share a lot, which may disturb your followers. Create a second twitter account.</li>
+                    </ol>
+                </p>
             </div>
 
         </div>

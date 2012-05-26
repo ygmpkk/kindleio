@@ -181,7 +181,6 @@ def get_douban_api(request):
                   acs_token_secret=token_secret)
     return api
 
-
 def login_with_twitter(request):
     api = OAuthApi(settings.TWITTER_CONSUMER_KEY,
                    settings.TWITTER_CONSUMER_SECRET)
@@ -205,19 +204,25 @@ def twitter_callback(request):
     request.session["access_token"] = access_token.to_string()
     if 'twitter_request_token' in request.session:
         del request.session["twitter_request_token"]
-
-    # save twitter id
     api = get_twitter_api(request)
-    user = api.GetUserInfo()
-    request.session["twitter_id"] = user.screen_name
-    create_or_update_user(user.screen_name, "twitter")
-    set_user_twitter_token(user, access_token.to_string())
-    next_url = request.session.get("next_url", "")
-    if not next_url:
-        next_url = reverse("accounts_profile")
-    return HttpResponseRedirect(next_url)
+    try:
+        screen_name = api.GetUserInfo().screen_name
+    except:
+        messages.error(request, "Network Error, Please Try Again.")
+        return HttpResponseRedirect(reverse("accounts_profile"))
+    request.session["twitter_id"] = screen_name
 
-
+    if not request.session.get("link_twitter_account", False):
+        del request.session["link_twitter_account"]
+        set_user_twitter_token(request.user, access_token.to_string())
+        return HttpResponseRedirect(reverse("accounts_profile"))
+    else:
+        # save twitter id
+        request.session["twitter_id"] = screen_name
+        user = create_or_update_user(user.screen_name, "twitter")
+        set_user_twitter_token(user, access_token.to_string())
+        next_url = request.session.get("next_url", reverse("accounts_profile"))
+        return HttpResponseRedirect(next_url)
 
 def password_reset(request):
     url = reverse('site_login')
