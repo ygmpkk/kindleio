@@ -10,12 +10,18 @@ class Note(models.Model):
     book = models.CharField(max_length=128, blank=True)
     author = models.CharField(max_length=128, blank=True)
     added = models.DateTimeField()
+    uuid = models.CharField(max_length=40, blank=True)
 
     class Meta:
         ordering = ["-added"]
 
     def __unicode__(self):
         return self.text
+
+    def get_absolute_url(self):
+        if self.pk:
+            return "http://kindle.io/notes/%s/" % self.uuid
+        return ""
 
     def author(self):
         if self.user.first_name:

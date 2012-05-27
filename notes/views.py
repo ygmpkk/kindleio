@@ -9,7 +9,7 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render_to_response
+from django.shortcuts import render, get_object_or_404
 from django.template import RequestContext
 from django.views.decorators.csrf import csrf_exempt
 
@@ -21,7 +21,7 @@ from kindleio.models import logger
 from kindleio.utils import get_soup_by_url
 from kindleio.utils.decorators import admin_required
 from kindleio.notes.models import Note, Word
-from kindleio.notes.utils import get_twitter_private_api
+from kindleio.notes.utils import get_twitter_private_api, shorten_status_urls
 
 
 @login_required
@@ -31,12 +31,13 @@ def index(request):
         notes = Note.objects.filter(user=request.user, book=book)
         if not notes:
             return HttpResponseRedirect(reverse("notes_index"))
-
     else:
         notes = Note.objects.filter(user=request.user)
-    return render_to_response("notes.html",
-        {'notes': notes},
-        context_instance=RequestContext(request))
+    return render(request, "notes/notes.html", {'notes': notes})
+
+def view_note(request, uuid):
+    note = get_object_or_404(Note, uuid=uuid)
+    return render(request, "notes/view_note.html", {'note': note})
 
 @login_required
 def link_twitter_account(request):
@@ -132,12 +133,26 @@ def save_note(user, url, date, tweet_id):
         note.save()
 
         # Delete this tweet and tweet it's content
-        status = text
-        if len(status) <= 140:
+        if len(text) <= 140:
+            status = text
             user_api = get_twitter_api(user=user)
             if len(status) + len(" #note") <= 140:
-            	status += " #note"
+                status += " #note"
             if remark and len(status) + len(remark) <= 138:
                 status = remark + ": " + status
-            user_api.PostUpdates(status)
-            user_api.DestroyStatus(tweet_id)
+            try:
+                user_api.PostUpdates(status)
+                user_api.DestroyStatus(tweet_id)
+            except:
+                logger.info("Error: tweeted: %s, delete: %s", status, tweet_id)
+        else:
+            # len(u".. #note http://t.co/al28lfq5xx") == 32
+            status = text[:108] + ".. #note " + note.get_absolute_url()
+            status = shorten_status_urls(status)
+            if len(status) > 140:
+                status = text[:130] + "... #note"
+            try:
+                user_api.PostUpdates(status)
+                user_api.DestroyStatus(tweet_id)
+            except:
+                logger.info("Error: tweeted: %s, delete: %s", status, tweet_id)

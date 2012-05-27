@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Kindle Notes{% endblock %}
+
+{% block style %}
+<style>
+.note .text {
+    font-size:15px;
+    line-height:24px;
+    font-family: Verdana, Verdana, Geneva, sans-serif;
+}
+.author {color:#E47911; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="row">
+    <div class="span8 offset2 home">
+        <h1 class="logo">Kindle Notes</h1>
+
+        <div class="row">
+            <div class="note">
+              <span class="text">{{ note.text|linebreaksbr }}</span>
+              <br>
+              <br>
+              <span class="added pull-right">
+                {{  note.added|date:"N j, Y" }}
+                by <span class="author">{{ note.user.first_name }}</span>
+              </span>
+
+              {% if note.book %}
+              <span class="book">From <a>{{ note.book }}</a></span>
+              {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
