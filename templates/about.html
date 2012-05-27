@@ -17,6 +17,12 @@ i {margin:4px;}
     <div class="span6 offset3">
         <h1 class="logo">About Kindle.io</h1>
 
+        {% if not request.user.username %}
+        <div style="text-align:right;">
+            <a class="btn btn-primary btn-large" style="font-size:20px;" href="/login/">Sign In Now</a>
+        </div>
+        {% endif %}
+
         <h3><i class="icon-home"></i>Send to Kindle Service</h3>
         <div class="desc">
             <p>Enter an URL on <a href="{% if request.user.email %}/{% else %}/login/?next=/{% endif %}">Home</a> page, and click "Send to Kindle" button, Kindle.io when send the MAIN CONTENT of the page to your kindle.<br>
