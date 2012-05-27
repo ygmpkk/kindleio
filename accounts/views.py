@@ -107,16 +107,28 @@ def site_login(request):
                 email__endswith='kindle.com')
             if result and len(result) == 1:
                 username = result[0].username
-        user = authenticate(username=username, password=password)
-        if user is not None:
-            login(request, user)
+        try:
+            user = User.objects.get(username=username)
+        except User.DoesNotExist:
+            messages.error(request, "User does not exist.")
+            return HttpResponseRedirect(reverse("site_login"))
+
+        auth_user = authenticate(username=user.username, password=password)
+        if auth_user is not None:
+            login(request, auth_user)
             next_url = request.session.get("next_url", "")
             if next_url:
                 del request.session['next_url']
             return HttpResponseRedirect(next_url or "/")
         else:
-            messages.error(request,
-                           "Invalid username or password, please try again.")
+            info = "Invalid username or password"
+            if username.startswith("twitter_"):
+                info = "It seems you signed up with Twitter, " \
+                       "Please Login with Twitter."
+            elif username.startswith("douban_"):
+                info = "It seems you signed up with Douban, " \
+                       "Please Login with Douban."
+            messages.error(request, info)
             return HttpResponseRedirect(reverse("site_login"))
     else:
         next_url = request.GET.get("next", "")
