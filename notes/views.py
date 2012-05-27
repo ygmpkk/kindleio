@@ -64,9 +64,8 @@ def check(request):
     try:
         messages = api.GetHomeTimeline(count=100)
     except:
-        logger.error("Error when GetHomeTimeline: %s" % e)
+        logger.error("Error when GetHomeTimeline when checking Notes")
         return HttpResponse("Error.")
-
     info = []
     for msg in messages:
         if "#Kindle" not in msg.text or 'http' not in msg.text:
@@ -79,7 +78,6 @@ def check(request):
             continue
         added = datetime.datetime(*rfc822.parsedate(msg.created_at)[:6])
         info.append((user, url, added, msg.id))
-
     count = 0
     for user, url, added, tweet_id in info:
         save_note(user, url, added, tweet_id)
