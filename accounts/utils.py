@@ -31,13 +31,19 @@ def get_twitter_api(request=None, user=None):
     return api
 
 
-def set_user_twitter_token(user, token):
+def set_user_twitter_token(user, screen_name, token_string):
     try:
         profile = user.get_profile()
     except UserProfile.DoesNotExist:
         profile = UserProfile.objects.create(user=user)
-    profile.twitter_token = token
+    profile.twitter_id = screen_name
+    profile.twitter_token = token_string
     profile.save()
+    try:
+        api = get_twitter_private_api()
+        api.CreateFriendship(screen_name)
+    except:
+        pass
 
 def get_user_from_uuid(uuid):
     date_limit = now() - timedelta(days=1)

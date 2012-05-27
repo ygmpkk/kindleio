@@ -218,21 +218,21 @@ def twitter_callback(request):
         del request.session["twitter_request_token"]
     api = get_twitter_api(request)
     try:
-        screen_name = api.GetUserInfo().screen_name
+        twitter_user = api.GetUserInfo()
     except:
         messages.error(request, "Network Error, Please Try Again.")
         return HttpResponseRedirect(reverse("accounts_profile"))
-    request.session["twitter_id"] = screen_name
+
+    screen_name = twitter_user.screen_name
+    request.session["twitter_id"] = screen_name # what does this for?
 
     if request.session.get("link_twitter_account", False):
         del request.session["link_twitter_account"]
-        set_user_twitter_token(request.user, access_token.to_string())
+        set_user_twitter_token(request.user, screen_name, access_token.to_string())
         return HttpResponseRedirect(reverse("accounts_profile"))
     else:
-        # save twitter id
-        request.session["twitter_id"] = screen_name
-        user = create_or_update_user(user.screen_name, "twitter")
-        set_user_twitter_token(user, access_token.to_string())
+        user = create_or_update_user(screen_name, "twitter")
+        set_user_twitter_token(user, screen_name, access_token.to_string())
         next_url = request.session.get("next_url", reverse("accounts_profile"))
         return HttpResponseRedirect(next_url)
 

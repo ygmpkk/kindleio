@@ -82,6 +82,7 @@ body {background: url("/media/img/bg.png");}
                 {% if request.user.get_profile.twitter_token %}
                     <strong>Your Twitter ID</strong>:
                     @{{ request.user.get_profile.twitter_id }}
+                    <a class="btn btn-primary" href="{% url notes_unlink_twitter_account %}">Unlink it</a>
                 {% else %}
                     <a class="btn btn-primary" href="{% url notes_link_twitter_account %}">Link a Twitter Account</a>
                 {% endif %}

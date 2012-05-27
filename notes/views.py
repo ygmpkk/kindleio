@@ -38,6 +38,7 @@ def index(request):
         {'notes': notes},
         context_instance=RequestContext(request))
 
+@login_required
 def link_twitter_account(request):
     api = OAuthApi(settings.TWITTER_CONSUMER_KEY,
                    settings.TWITTER_CONSUMER_SECRET)
@@ -48,33 +49,11 @@ def link_twitter_account(request):
     return HttpResponseRedirect(authorization_url)
 
 @login_required
-def config(request):
-    if request.method == "POST":
-        twitter_id = request.POST.get("twitter_id", "").strip()
-        if twitter_id.startswith('@'):
-            twitter_id = twitter_id[1:]
-        if not twitter_id:
-            messages.error(request, "Twitter ID needed.")
-        elif '@' in twitter_id:
-            messages.error(request, "Invalid Twitter ID. It should like @kindleio")
-        else:
-            profile = request.user.get_profile()
-            if profile.twitter_id != twitter_id:
-                if UserProfile.objects.filter(twitter_id=twitter_id).exists():
-                    messages.error(request, "This twitter id was already set by others.")
-                else:
-                    try:
-                        if not settings.DEBUG:
-                            api = get_twitter_private_api()
-                            api.CreateFriendship(twitter_id)
-                    except Exception, e:
-                        messages.error(request, "Failed when following your account, please try again.")
-                    else:
-                        profile.twitter_id = twitter_id
-                        profile.save()
-                        messages.success(request, "Your twitter id was set successfully.")
+def unlink_twitter_account(request):
+    profile = request.user.get_profile()
+    profile.twitter_token = ""
+    profile.save()
     return HttpResponseRedirect(reverse("accounts_profile"))
-
 
 @csrf_exempt
 @admin_required
