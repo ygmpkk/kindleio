@@ -3,6 +3,7 @@ import re
 import rfc822
 import string
 import urllib2
+import uuid
 
 from django.conf import settings
 from django.contrib import messages
@@ -123,6 +124,7 @@ def save_note(user, url, date, tweet_id):
             Word.objects.create(user=user, url=url, word=text)
     else:
         note = Note(user=user, url=url, text=text)
+        note.uuid = str(uuid.uuid4())
         note.added = date or datetime.datetime.now()
         if remark:
             note.remark = remark
