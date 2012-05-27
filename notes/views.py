@@ -135,9 +135,9 @@ def save_note(user, url, date, tweet_id):
         note.save()
 
         # Delete this tweet and tweet it's content
+        user_api = get_twitter_api(user=user)
         if len(text) <= 140:
             status = text
-            user_api = get_twitter_api(user=user)
             if len(status) + len(" #note") <= 140:
                 status += " #note"
             if remark and len(status) + len(remark) <= 138:
@@ -145,8 +145,8 @@ def save_note(user, url, date, tweet_id):
             try:
                 user_api.PostUpdates(status)
                 user_api.DestroyStatus(tweet_id)
-            except:
-                logger.info("Error: tweeted: %s, delete: %s", status, tweet_id)
+            except Exception, e:
+                logger.info("Error: %s tweeted: %s, delete: %s", e, status, tweet_id)
         else:
             # len(u".. #note http://t.co/al28lfq5xx") == 32
             status = text[:108] + ".. #note " + note.get_absolute_url()
@@ -156,5 +156,5 @@ def save_note(user, url, date, tweet_id):
             try:
                 user_api.PostUpdates(status)
                 user_api.DestroyStatus(tweet_id)
-            except:
-                logger.info("Error: tweeted: %s, delete: %s", status, tweet_id)
+            except Exception, e:
+                logger.info("Error: %s tweeted: %s, delete: %s", e, status, tweet_id)
