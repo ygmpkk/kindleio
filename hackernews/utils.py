@@ -1,7 +1,6 @@
 from datetime import timedelta
 
 from kindleio.hackernews.models import UserConfig, POINTS_LIMITS
-from kindleio.models import logger
 from kindleio.utils import get_soup_by_url
 
 def is_receive_weekly(user):
@@ -71,7 +70,6 @@ class HackerNewsArticle(object):
         try:
             soup = get_soup_by_url(self.url)
         except Exception, e:
-            logger.info("Time out when fetching HackerNewsArticle: %s", e)
             return
 
         # Reset articles before fetching

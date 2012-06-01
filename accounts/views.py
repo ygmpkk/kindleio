@@ -163,8 +163,7 @@ def douban_callback(request):
     access_tokens = auth.get_acs_token(request_key, request_secret)
     tokens = parse_qs(access_tokens)
     request.session["douban_oauth_token"] = tokens["oauth_token"][0]
-    request.session["douban_oauth_token_secret"] = \
-        tokens["oauth_token_secret"][0]
+    request.session["douban_oauth_token_secret"] = tokens["oauth_token_secret"][0]
     request.session["douban_user_id"] = tokens["douban_user_id"][0]
 
     # Create a user if not exist
