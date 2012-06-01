@@ -21,7 +21,6 @@ from kindleio.utils.decorators import admin_required
 @admin_required
 def generate_weekly(request):
     mobi = HackerNews.objects.generate_weekly()
-    logger.info("Generating Weekly: %s" % mobi)
     return HttpResponse("Weekly mobi generated: %s\n" % mobi)
 
 
@@ -48,10 +47,8 @@ def weekly_sending(request):
         return HttpResponse(info + "\n")
 
     try:
-        logger.info("sending weekly to %s", emails)
         subject = "Hacker News Weekly %s" % week_number
         send_files_to([weekly.file_path], emails, subject=subject)
-        logger.info("Finished for sending weekly to %s", emails)
         for item in receivers:
             item.sent = True
             item.save()
