@@ -21,6 +21,9 @@ class UserProfile(models.Model):
     twitter_id = models.CharField(max_length=40, blank=True)
     twitter_token = models.CharField(max_length=256, blank=True)
 
+    def has_twitter_token(self):
+        return len(self.twitter_token or "") > 20
+
     def hn_points(self):
         from kindleio.hackernews.utils import get_user_points
         return get_user_points(self.user)

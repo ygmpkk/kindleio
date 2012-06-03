@@ -20,7 +20,7 @@ class Note(models.Model):
 
     def get_absolute_url(self):
         if self.pk:
-            return "http://kindle.io/notes/%s/" % self.uuid
+            return "/notes/%s/" % self.uuid
         return ""
 
     def author(self):

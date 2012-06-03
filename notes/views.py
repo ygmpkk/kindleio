@@ -150,7 +150,7 @@ def save_note(user, url, date, tweet_id):
                 logger.info("Error: %s tweeted: %s, delete: %s", e, status, tweet_id)
         else:
             # len(u".. #note http://t.co/al28lfq5xx") == 32; 140 - 32 = 108
-            status = text[:108] + ".. #note " + note.get_absolute_url()
+            status = text[:108] + ".. #note http://kindle.io" + note.get_absolute_url()
             status = shorten_status_urls(status)
             if len(status) > 140:
                 status = text[:130] + "... #note"

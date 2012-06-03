@@ -44,7 +44,7 @@
               <br>
               <br>
               <span class="added pull-right">
-                {{  note.added|date:"N j, Y" }}
+                <a href="{{ note.get_absolute_url }}">{{  note.added|date:"N j, Y" }}</a>
               </span>
               {% if note.book %}
               <span class="book">From <a href="{% url notes_index %}?book={{ note.book }}">{{ note.book }}</a></span>
