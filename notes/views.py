@@ -34,7 +34,8 @@ def index(request):
             return HttpResponseRedirect(reverse("notes_index"))
     else:
         notes = Note.objects.filter(user=request.user)
-    return render(request, "notes/notes.html", {'notes': notes})
+    context = {'notes': notes, 'book': book}
+    return render(request, "notes/notes.html", context)
 
 def view_note(request, uuid):
     note = get_object_or_404(Note, uuid=uuid)
