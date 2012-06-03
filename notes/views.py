@@ -125,11 +125,11 @@ def save_note(user, url, date, tweet_id):
         note.uuid = str(uuid.uuid4())
         note.added = date or datetime.datetime.now()
         if remark:
-            note.remark = remark
+            note.remark = remark[:128]
         if book:
-            note.book = book
+            note.book = book[:128]
         if author:
-            note.author = author
+            note.author = author[:128]
         note.save()
 
         # Delete this tweet and tweet it's content
