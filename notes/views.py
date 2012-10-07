@@ -93,7 +93,11 @@ def get_user_from_twitter_id(user_name):
 
 def save_note(user, url, date, tweet_id):
     soup = get_soup_by_url(url)
+    if not soup:
+        return
     tag = soup.find("div", {'class': 'highlightText'})
+    if not tag:
+        return
     text = ''.join(tag.findAll(text=True)).strip()
 
     remark = ''
