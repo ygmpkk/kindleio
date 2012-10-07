@@ -6,7 +6,10 @@ from kindleio.utils.mail import GSMTP
 
 
 def get_soup_by_url(url, timeout=10):
-    page = urllib2.urlopen(url, timeout=timeout)
+    try:
+        page = urllib2.urlopen(url, timeout=timeout)
+    except urllib2.HTTPError:
+        return None
     try:
         soup = BeautifulSoup(page, from_encoding='utf8')
     except UnicodeEncodeError:

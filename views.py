@@ -36,13 +36,16 @@ def home(request):
             bf = BriticleFile(url, settings.KINDLE_LIVE_DIR)
         except Exception, e:
             if isinstance(e, URLError) or 'timed out' in str(e):
-                logger.info("URLError or Time out Exception: %s URL: %s" % (e, url))
+                messages.error(request, "Open URL Error, Try again later.")
+                return HttpResponseRedirect("/")
             elif isinstance (e, UnicodeEncodeError):
                 logger.info("UnicodeEncodeError: %s URL: %s" % (e, url))
+                messages.error(request, "Internal Error when fetch the URL.")
+                return HttpResponseRedirect("/")
             raise
 
         doc = bf.save_to_mobi(sent_by="Kindle.io")
-        if doc:
+        if os.path.exists(doc):
             if not settings.DEBUG:
                 send_to_kindle(request, [doc], subject=bf.title)
                 os.remove(doc)
